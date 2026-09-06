@@ -3,60 +3,150 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Hollow Cafe - Sprite Arena</title>
+    <title>The Hollow Cafe - House Floor</title>
     <style>
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
+            font-family: 'Courier New', Courier, monospace;
         }
 
         body {
-            background-color: #111116;
+            background-color: #0b131a; /* Styled teal/dark background matching the image perimeter */
             height: 100vh;
             overflow: hidden;
             display: flex;
-            justify-content: center;
+            flex-direction: column;
             align-items: center;
+            justify-content: center;
+        }
+
+        #gameContainer {
+            width: 800px;
+            background: #000;
+            border: 4px solid #450a0a;
+            box-shadow: 0 0 40px rgba(0, 0, 0, 0.7);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        /* SCREEN CANVAS VIEWPORT */
+        .viewport-wrapper {
+            position: relative;
+            width: 792px;
+            height: 500px;
+            overflow: hidden;
+            background-color: #0f172a;
         }
 
         #gameCanvas {
-            background-color: #000000;
-            border: 4px solid #b91c1c; 
-            box-shadow: 0 0 30px rgba(185, 28, 28, 0.4);
             display: block;
+            cursor: default;
+        }
+
+        /* 💡 FLOATING IN-GAME INTERACTION TEXT BANNER OVERLAY */
+        #interactionPrompt {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(17, 0, 0, 0.9);
+            border: 2px solid #ff9f0a;
+            color: #ff9f0a;
+            padding: 12px 24px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            border-radius: 4px;
+            box-shadow: 0 0 15px rgba(255, 159, 10, 0.4);
+            letter-spacing: 1px;
+            display: none; /* Controlled dynamically via distance engine check loops */
+            z-index: 1000;
+            pointer-events: none;
         }
     </style>
 </head>
 <body>
 
-    <canvas id="gameCanvas" width="800" height="450"></canvas>
+    <div id="gameContainer">
+        <div class="viewport-wrapper">
+            <!-- DYNAMIC INTERACTION HUD PROMPT BLOCK -->
+            <div id="interactionPrompt">[INTERACT: (E) GO TO WORK]</div>
+
+            <!-- RETRO GRAPHICS RENDERING LAYER -->
+            <canvas id="gameCanvas" width="792" height="500"></canvas>
+        </div>
+    </div>
 
     <script>
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
-
-        // Disable smoothing to make the dynamically drawn pixels crisp and retro
         ctx.imageSmoothingEnabled = false;
 
-        // 👤 PLAYER SPRITE CONFIGURATION PARAMETERS
+        let loopId = null;
+
+        // 👤 PLAYER SPRITE INITIALIZATION (Spawns in Bedroom)
         let player = {
-            x: 400,
-            y: 225,
-            width: 32,   // Sized up to look like a clean retro tile asset
-            height: 36,
-            speed: 4,
+            x: 100,
+            y: 100,
+            width: 28,
+            height: 32,
+            speed: 3.5,
             isMoving: false,
             animTimer: 0,
-            walkFrame: 0 // Toggles between 0 and 1 for alternating feet movement steps
+            walkFrame: 0
         };
 
-        let keys = { w: false, a: false, s: false, d: false };
+        // 🚪 FRONT EXIT DOOR LOGIC ANCHORS (Bottom Left Corner Area)
+        let exitDoor = { x: 40, y: 410, w: 50, h: 50, color: '#ff9f0a' };
+        let isNearDoor = false;
+
+        // 🧱 SOLID INTERIOR STRUCTURAL WALLS (Forces a clean 4-room bird's-eye separation)
+        let houseWalls = [
+            // Structural Exterior Shell Boundaries
+            { x: 30, y: 30, w: 732, h: 12 },   // Top shell wall
+            { x: 30, y: 460, w: 732, h: 12 },  // Bottom shell wall
+            { x: 30, y: 30, w: 12, h: 442 },   // Left shell wall
+            { x: 750, y: 30, w: 12, h: 442 },  // Right shell wall
+
+            // Main Room Partitions (Left-to-Right / Top-to-Bottom Layout grid splits)
+            { x: 390, y: 30, w: 12, h: 160 },  // Vertical divider top segment
+            { x: 390, y: 260, w: 12, h: 212 }, // Vertical divider bottom segment
+            { x: 42, y: 240, w: 358, h: 12 },  // Left side horizontal room dividing split
+            { x: 390, y: 240, w: 372, h: 12 }  // Right side horizontal room dividing split
+        ];
+
+        // 🪑 PALETTE MATCHED ROOM FURNITURE BLOCK CONFIGURATIONS
+        let houseFurniture = [
+            // Room 1: Master Bedroom (Top Left - Pink/Peach Accent Theme)
+            { x: 55, y: 55, w: 70, h: 80, color: '#a21caf', label: 'Double Bed Matrix' },
+            { x: 300, y: 55, w: 45, h: 45, color: '#312e81', label: 'Storage Wardrobe Unit' },
+            { x: 320, y: 175, w: 40, h: 50, color: '#475569', label: 'Dressing Desk Space' },
+
+            // Room 2: Cozy Lounge Area (Bottom Left - Warm Tan Theme)
+            { x: 60, y: 275, w: 120, h: 45, color: '#b45309', label: 'Cushioned Leather Sofa' },
+            { x: 260, y: 275, w: 110, h: 110, color: '#78350f', label: 'Central Living Table Carpet' },
+
+            // Room 3: Modern Kitchenette (Top Right - Industrial Wood Theme)
+            { x: 430, y: 55, w: 180, h: 35, color: '#334155', label: 'Granite Appliance Counter' },
+            { x: 450, y: 130, w: 70, h: 70, color: '#1e293b', label: 'Breakfast Dining Station' },
+            { x: 685, y: 55, w: 50, h: 70, color: '#64748b', label: 'Heavy Double-Door Refrigerator' },
+
+            // Room 4: Recreation Studio (Bottom Right - Dark Walnut Theme)
+            { x: 430, y: 390, w: 140, h: 55, color: '#0f172a', label: 'Entertainment Media Shelf' },
+            { x: 670, y: 280, w: 65, h: 65, color: '#111827', label: 'Storage Trunk Base' }
+        ];
+
+        let keys = { w: false, a: false, s: false, d: false, e: false };
 
         window.onload = function() {
             window.addEventListener('keydown', (e) => {
                 let key = e.key.toLowerCase();
-                if (key in keys) keys[key] = true;
+                if (key in keys) {
+                    keys[key] = true;
+                    if (key === 'w' || key === 'a' || key === 's' || key === 'd') e.preventDefault();
+                }
             });
 
             window.addEventListener('keyup', (e) => {
@@ -64,100 +154,100 @@
                 if (key in keys) keys[key] = false;
             });
 
-            requestAnimationFrame(engineFrameUpdateLoop);
+            if (loopId) cancelAnimationFrame(loopId);
+            loopId = requestAnimationFrame(mainGameEngineLoop);
         };
 
-        function engineFrameUpdateLoop() {
+        function mainGameEngineLoop() {
+            updatePlayerMovementPhysics();
+            checkInteractionTriggers();
+            renderCompositeGraphicsFrame();
+            loopId = requestAnimationFrame(mainGameEngineLoop);
+        }
+
+        function updatePlayerMovementPhysics() {
             player.isMoving = false;
+            let nextX = player.x;
+            let nextY = player.y;
 
-            // Process movement inputs matrix
-            if (keys.w) { player.y -= player.speed; player.isMoving = true; }
-            if (keys.s) { player.y += player.speed; player.isMoving = true; }
-            if (keys.a) { player.x -= player.speed; player.isMoving = true; }
-            if (keys.d) { player.x += player.speed; player.isMoving = true; }
+            if (keys.w) { nextY -= player.speed; player.isMoving = true; }
+            if (keys.s) { nextY += player.speed; player.isMoving = true; }
+            if (keys.a) { nextX -= player.speed; player.isMoving = true; }
+            if (keys.d) { nextX += player.speed; player.isMoving = true; }
 
-            // Hard boundary locks to contain sprite on the screen grid
-            if (player.x < 0) player.x = 0;
-            if (player.x > canvas.width - player.width) player.x = canvas.width - player.width;
-            if (player.y < 0) player.y = 0;
-            if (player.y > canvas.height - player.height) player.y = canvas.height - player.height;
+            // Collision resolution loops filtering wall and object models bounds
+            if (!evaluateCollisionWithWalls(nextX, player.y) && !evaluateCollisionWithFurniture(nextX, player.y)) {
+                player.x = nextX;
+            }
+            if (!evaluateCollisionWithWalls(player.x, nextY) && !evaluateCollisionWithFurniture(player.x, nextY)) {
+                player.y = nextY;
+            }
 
-            // Process step cycle animation speeds timers
+            // Simple walking frame stride progression logic checks
             if (player.isMoving) {
                 player.animTimer++;
-                if (player.animTimer > 12) { // Updates walking stance every 12 frames
+                if (player.animTimer > 10) {
                     player.walkFrame = player.walkFrame === 0 ? 1 : 0;
                     player.animTimer = 0;
                 }
             } else {
-                player.walkFrame = 0; // Standard standing pose when still
+                player.walkFrame = 0;
             }
+        }
 
-            // --- RENDERING PIPELINE ---
-            ctx.fillStyle = '#0a0a0c';
+        function evaluateCollisionWithWalls(x, y) {
+            for (let wall of houseWalls) {
+                if (x + player.width > wall.x && x < wall.x + wall.w &&
+                    y + player.height > wall.y && y < wall.y + wall.h) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        function evaluateCollisionWithFurniture(x, y) {
+            for (let obj of houseFurniture) {
+                if (x + player.width > obj.x && x < obj.x + obj.w &&
+                    y + player.height > obj.y && y < obj.y + obj.h) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        function checkInteractionTriggers() {
+            // Evaluates mathematical centers offset lines distance checks
+            let pCenterX = player.x + player.width / 2;
+            let pCenterY = player.y + player.height / 2;
+            let dCenterX = exitDoor.x + exitDoor.w / 2;
+            let dCenterY = exitDoor.y + exitDoor.h / 2;
+
+            let distanceToExit = Math.hypot(pCenterX - dCenterX, pCenterY - dCenterY);
+            const promptElement = document.getElementById('interactionPrompt');
+
+            if (distanceToExit < 75) {
+                isNearDoor = true;
+                promptElement.style.display = 'block';
+
+                // ⚡ DETECT EXPLICIT KEY ENGAGEMENT TRIGGERS FOR THE INTERACT ROUTINE
+                if (keys.e) {
+                    keys.e = false; // Reset trigger state array
+                    cancelAnimationFrame(loopId);
+                    alert("Leaving the house... commuting down to your shift at The Hollow Cafe.");
+                    window.location.href = 'gamefloor.html?shift=active'; // Proceeds right into gameplay floors loops!
+                }
+            } else {
+                isNearDoor = false;
+                promptElement.style.display = 'none';
+            }
+        }
+
+        function renderCompositeGraphicsFrame() {
+            // 1. Draw out perimeter background canvas fills color lines panels
+            ctx.fillStyle = '#1e293b';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            // Draw dark room gridlines background matrix
-            ctx.strokeStyle = '#222226';
-            ctx.lineWidth = 1;
-            for (let i = 0; i < canvas.width; i += 40) {
-                ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, canvas.height); ctx.stroke();
-            }
-            for (let j = 0; j < canvas.height; j += 40) {
-                ctx.beginPath(); ctx.moveTo(0, j); ctx.lineTo(canvas.width, j); ctx.stroke();
-            }
+            // 2. Render internal house floor space bounds
+            ctx.fillStyle = '#1e1b4b'; // Deep dark house internal carpet tone palette base
+            ctx.fillRect(42, 42, 708, 418);
 
-            // 🎯 DRAW RETRO CHARACTER AVATAR SPRITE BLOCK (Pixel-Art Engine Rendering)
-            let px = player.x;
-            let py = player.y;
-
-            // 1. Black Hair Outlines (Left and Right sides of head)
-            ctx.fillStyle = '#000000';
-            ctx.fillRect(px + 4, py + 12, 4, 10);
-            ctx.fillRect(px + 24, py + 12, 4, 10);
-
-            // 2. Skin Face Base Layer
-            ctx.fillStyle = '#fbcfe8'; // Peach-skin tone representation
-            ctx.fillRect(px + 6, py + 10, 20, 16);
-
-            // 3. Eyes Detailing
-            ctx.fillStyle = '#000000';
-            ctx.fillRect(px + 10, py + 14, 2, 4);
-            ctx.fillRect(px + 20, py + 14, 2, 4);
-
-            // 4. Overalls / Mustachio mouth area accent
-            ctx.fillStyle = '#451a03';
-            ctx.fillRect(px + 10, py + 20, 12, 2);
-
-            // 5. Red Cap Brim Hat
-            ctx.fillStyle = '#dc2626'; // Deep red dome cap matching your reference image
-            ctx.fillRect(px + 4, py + 2, 24, 8);  // Main cap base
-            ctx.fillRect(px + 2, py + 6, 28, 4);  // Cap extended side peak brim 
-
-            // 6. Main Red Shirt Torso Chest Area
-            ctx.fillStyle = '#dc2626';
-            ctx.fillRect(px + 4, py + 26, 24, 6);
-
-            // 7. Blue Denim Overalls/Straps Layer Accent
-            ctx.fillStyle = '#2563eb';
-            ctx.fillRect(px + 8, py + 26, 4, 6);  // Left overall strap block
-            ctx.fillRect(px + 20, py + 26, 4, 6); // Right overall strap block
-            ctx.fillRect(px + 8, py + 30, 16, 4); // Pants middle segment waistline
-
-            // 8. Dynamic Walking Boot Steps Stances
-            ctx.fillStyle = '#991b1b'; // Red-brown helper work boots
-            if (player.walkFrame === 0) {
-                // Stance 1: Standing / Left Foot Down
-                ctx.fillRect(px + 6, py + 34, 6, 4);
-                ctx.fillRect(px + 20, py + 34, 6, 4);
-            } else {
-                // Stance 2: Alternating Right Foot Walking Step Raised Profile
-                ctx.fillRect(px + 6, py + 32, 6, 4);
-                ctx.fillRect(px + 20, py + 34, 6, 4);
-            }
-
-            requestAnimationFrame(engineFrameUpdateLoop);
-        }
-    </script>
-</body>
-</html>

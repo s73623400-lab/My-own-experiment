@@ -5,30 +5,40 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>The Hollow Cafe</title>
     <style>
+        /* --- CORE CONFIGURATIONS --- */
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
+        }
+
+        html, body {
+            height: 100%;
+            background-color: #000000;
+            overflow: hidden;
             font-family: 'Courier New', Courier, monospace;
         }
 
         body {
-            background: #000000;
-            color: #b91c1c;
+            position: relative;
+        }
+
+        /* --- MENU SCREEN LAYOUT --- */
+        .menu-wrapper {
             height: 100vh;
             display: flex;
             align-items: center;
             justify-content: flex-start;
             padding-left: 10%;
-            overflow: hidden;
+            transition: opacity 0.8s ease;
         }
 
         .menu-container {
             display: flex;
             flex-direction: column;
-            gap: 2rem;
-            max-width: 450px;
+            gap: 1.5rem;
             width: 100%;
+            max-width: 450px;
         }
 
         .game-title {
@@ -38,22 +48,22 @@
             letter-spacing: 3px;
             color: #b91c1c;
             text-shadow: 0 0 15px rgba(185, 28, 28, 0.5);
-            margin-bottom: 1rem;
+            margin-bottom: 0.5rem;
         }
 
         .menu-screen {
             display: flex;
             flex-direction: column;
             gap: 1rem;
+            width: 100%;
         }
 
         .hidden {
             display: none !important;
         }
 
-        /* Fully styled interactive button rules */
         .menu-btn {
-            background: rgba(10, 0, 0, 0.9);
+            background: rgba(15, 0, 0, 0.9);
             border: 2px solid #450a0a;
             color: #b91c1c;
             padding: 1.2rem 2rem;
@@ -61,7 +71,7 @@
             font-weight: bold;
             text-align: left;
             border-radius: 4px;
-            cursor: pointer; /* Confirms element is interactive by altering the mouse pointer */
+            cursor: pointer;
             transition: all 0.2s ease;
             width: 100%;
             display: flex;
@@ -70,7 +80,6 @@
             text-transform: uppercase;
         }
 
-        /* Hover animation response */
         .menu-btn:hover:not(:disabled) {
             background: #b91c1c;
             color: #000000;
@@ -101,135 +110,221 @@
             color: #fff !important;
             border-color: #fff !important;
         }
+
+        /* --- BARISTA REGISTRY PROFILE AREA LAYOUT --- */
+        .profile-wrapper {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            background-color: #1a1d24;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            user-select: none;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 1s ease;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+
+        .profile-wrapper.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .registry-card {
+            width: 100%;
+            max-width: 480px;
+            background-color: #232731;
+            border: 2px solid #374151;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+            box-sizing: border-box;
+            color: #f3f4f6;
+        }
+
+        .registry-card h2 {
+            margin-top: 0;
+            color: #ff9f0a;
+            font-size: 22px;
+            border-bottom: 2px solid #374151;
+            padding-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .registry-card label {
+            font-size: 13px;
+            color: #9ca3af;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        input[type="text"] {
+            background-color: #12141c;
+            border: 1px solid #4b5563;
+            border-radius: 6px;
+            padding: 12px;
+            color: #ffffff;
+            font-size: 15px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        input[type="text"]:focus {
+            border-color: #2563eb;
+        }
+
+        .faded-hint-text {
+            font-size: 13px;
+            color: rgba(156, 163, 175, 0.35);
+            font-style: italic;
+            margin-top: 2px;
+        }
+
+        .btn-submit {
+            width: 100%;
+            background-color: #2563eb;
+            color: white;
+            border: none;
+            padding: 14px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            margin-top: 10px;
+        }
+
+        .btn-submit:hover {
+            background-color: #1d4ed8;
+        }
+
+        .btn-continue {
+            width: 100%;
+            background-color: rgba(255, 159, 10, 0.15);
+            color: rgba(243, 244, 246, 0.25);
+            border: 1px dashed rgba(255, 159, 10, 0.3);
+            padding: 14px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 8px;
+            margin-top: 15px;
+            box-sizing: border-box;
+            text-align: center;
+            cursor: not-allowed;
+            pointer-events: none; 
+            transition: all 0.3s ease-in-out;
+        }
+
+        .btn-continue.unlocked {
+            background-color: #ff9f0a !important;
+            color: #000000 !important;
+            border: none !important;
+            cursor: pointer !important;
+            pointer-events: auto !important;
+            box-shadow: 0 4px 14px rgba(255, 159, 10, 0.4);
+        }
+
+        .btn-continue.unlocked:hover {
+            background-color: #e08b04 !important;
+            transform: scale(1.01);
+        }
+
+        #badge-output {
+            margin-top: 25px;
+            background-color: #12141c;
+            border: 1px dashed #ff9f0a;
+            border-radius: 8px;
+            padding: 15px;
+            display: none;
+        }
+
+        /* --- TIMED TRANSITION FADE SCREEN COVER --- */
+        #fadeOverlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000000;
+            opacity: 0;
+            pointer-events: none;
+            z-index: 999;
+            transition: opacity 0.6s ease-in-out;
+        }
     </style>
 </head>
 <body>
 
-    <div class="menu-container">
-        <h1 class="game-title">The Hollow Cafe</h1>
-        
-        <!-- Main Screen (Home Menu) -->
-        <div id="mainScreen" class="menu-screen">
-            <!-- These are authentic <button> elements wired to click listeners -->
-            <button id="mainNewGameBtn" class="menu-btn">New Game</button>
-            <button id="mainContinueBtn" class="menu-btn">Continue</button>
-        </div>
+    <!-- Black Scene Transition Element Layer -->
+    <div id="fadeOverlay"></div>
 
-        <!-- Sub-Screen containing the 5 individual save profiles -->
-        <div id="slotScreen" class="menu-screen hidden">
-            <h2 id="slotScreenTitle" style="font-size: 1.2rem; margin-bottom: 0.5rem; color: #7f1d1d;">SELECT TARGET FILES</h2>
+    <!-- MAIN MENU LAYER -->
+    <div id="menuArea" class="menu-wrapper">
+        <div class="menu-container">
+            <h1 class="game-title">The Hollow Cafe</h1>
             
-            <button class="menu-btn slot-btn" data-slot="1">New Game <span class="slot-status"></span></button>
-            <button class="menu-btn slot-btn" data-slot="2">New Game <span class="slot-status"></span></button>
-            <button class="menu-btn slot-btn" data-slot="3">New Game <span class="slot-status"></span></button>
-            <button class="menu-btn slot-btn" data-slot="4">New Game <span class="slot-status"></span></button>
-            <button class="menu-btn slot-btn" data-slot="5">New Game <span class="slot-status"></span></button>
-            
-            <button id="backBtn" class="menu-btn back-btn">← RETURN</button>
+            <div id="mainScreen" class="menu-screen">
+                <button id="mainNewGameBtn" class="menu-btn">New Game</button>
+                <button id="mainContinueBtn" class="menu-btn">Continue</button>
+            </div>
+
+            <div id="slotScreen" class="menu-screen hidden">
+                <h2 id="slotScreenTitle" style="font-size: 1.2rem; margin-bottom: 0.5rem; color: #7f1d1d; text-transform: uppercase; letter-spacing: 2px;">SELECT TARGET FILES</h2>
+                
+                <button class="menu-btn slot-btn" data-slot="1">New Game <span class="slot-status"></span></button>
+                <button class="menu-btn slot-btn" data-slot="2">New Game <span class="slot-status"></span></button>
+                <button class="menu-btn slot-btn" data-slot="3">New Game <span class="slot-status"></span></button>
+                <button class="menu-btn slot-btn" data-slot="4">New Game <span class="slot-status"></span></button>
+                <button class="menu-btn slot-btn" data-slot="5">New Game <span class="slot-status"></span></button>
+                
+                <button id="backBtn" class="menu-btn back-btn">← RETURN</button>
+            </div>
         </div>
     </div>
 
-    <script>
-        const SAVE_PREFIX = 'hollow_cafe_slot_';
-        let currentMode = ''; 
-
-        document.addEventListener('DOMContentLoaded', () => {
-            const mainScreen = document.getElementById('mainScreen');
-            const slotScreen = document.getElementById('slotScreen');
-            const slotScreenTitle = document.getElementById('slotScreenTitle');
+    <!-- BARISTA EMPLOYMENT REGISTRY LAYER -->
+    <div id="profileArea" class="profile-wrapper">
+        <div class="registry-card">
+            <h2>Shift Registry File</h2>
             
-            const mainNewGameBtn = document.getElementById('mainNewGameBtn');
-            const mainContinueBtn = document.getElementById('mainContinueBtn');
-            const backBtn = document.getElementById('backBtn');
-            const slotButtons = document.querySelectorAll('.slot-btn');
+            <div class="form-group">
+                <label for="username">Staff Name:</label>
+                <input type="text" id="username" placeholder="E.g. Zack" autocomplete="off">
+            </div>
 
-            // Evaluates local browser storage to determine if 'Continue' should remain locked
-            function refreshMainMenu() {
-                let hasAnySave = false;
-                for (let i = 1; i <= 5; i++) {
-                    if (localStorage.getItem(SAVE_PREFIX + i)) {
-                        hasAnySave = true;
-                        break;
-                    }
-                }
-                mainContinueBtn.disabled = !hasAnySave;
-            }
+            <div class="form-group">
+                <label for="birthplace">Place of Birth:</label>
+                <input type="text" id="birthplace" placeholder="E.g. London" autocomplete="off">
+            </div>
 
-            // Sets up conditional styling and statuses for individual slot targets
-            function setupSlotButtons(mode) {
-                currentMode = mode;
-                slotScreenTitle.textContent = mode === 'new' ? 'CHOOSE A SLOT TO OVERWRITE:' : 'LOAD ACTIVE ENTRY:';
+            <div class="form-group">
+                <label>Registry Time Metric:</label>
+                <div id="dynamic-date" class="faded-hint-text">System calculating DOB placeholder...</div>
+            </div>
 
-                slotButtons.forEach(btn => {
-                    const slotId = btn.getAttribute('data-slot');
-                    const savedData = localStorage.getItem(SAVE_PREFIX + slotId);
+            <div class="form-group">
+                <label for="coffeename">Coffee Name Alias:</label>
+                <input type="text" id="coffeename" placeholder="E.g. Espresso King" autocomplete="off">
+            </div>
 
-                    if (savedData) {
-                        const data = JSON.parse(savedData);
-                        btn.innerHTML = `Profile ${slotId} <span class="slot-status">Day ${data.day} (Active)</span>`;
-                        btn.disabled = false; 
-                    } else {
-                        btn.innerHTML = `New Game <span class="slot-status">[Empty]</span>`;
-                        btn.disabled = (mode === 'continue'); 
-                    }
-                });
-            }
+            <button class="btn-submit" onclick="generateStaffBadge()">Lock File & Start Shift</button>
 
-            // EXPLICIT CLICK LISTENER FOR THE NEW GAME BUTTON
-            mainNewGameBtn.addEventListener('click', () => {
-                mainScreen.classList.add('hidden');      // Hides the home screen view
-                slotScreen.classList.remove('hidden');  // Reveals the 5 game slots sub-screen view
-                setupSlotButtons('new');                 // Sets up configurations for new profile assignment
-            });
+            <div id="continue-link-btn" class="btn-continue" onclick="advanceToGameFloor()">
+                Continue ➔
+            </div>
 
-            // EXPLICIT CLICK LISTENER FOR THE CONTINUE BUTTON
-            mainContinueBtn.addEventListener('click', () => {
-                mainScreen.classList.add('hidden');
-                slotScreen.classList.remove('hidden');
-                setupSlotButtons('continue');
-            });
-
-            // EXPLICIT CLICK LISTENER FOR THE BACK BUTTON
-            backBtn.addEventListener('click', () => {
-                slotScreen.classList.add('hidden');
-                mainScreen.classList.remove('hidden');
-                refreshMainMenu();
-            });
-
-            // Allocation click configurations for managing slot save updates
-            slotButtons.forEach(btn => {
-                btn.addEventListener('click', () => {
-                    const slotId = btn.getAttribute('data-slot');
-                    const slotKey = SAVE_PREFIX + slotId;
-                    const existingSave = localStorage.getItem(slotKey);
-
-                    if (currentMode === 'new') {
-                        if (existingSave) {
-                            const overwrite = confirm(`Warning: Data exists in Slot ${slotId}. Overwrite progress?`);
-                            if (!overwrite) return;
-                        }
-
-                        // Save data profile generation object
-                        const newGameData = {
-                            day: 1,
-                            time: new Date().toLocaleDateString()
-                        };
-                        localStorage.setItem(slotKey, JSON.stringify(newGameData));
-                        alert(`Starting New Game in Slot ${slotId}... entering the Cafe.`);
-                        
-                    } else if (currentMode === 'continue' && existingSave) {
-                        const data = JSON.parse(existingSave);
-                        alert(`Resuming Slot ${slotId} on Day ${data.day}...`);
-                    }
-                    
-                    slotScreen.classList.add('hidden');
-                    mainScreen.classList.remove('hidden');
-                    refreshMainMenu();
-                });
-            });
-
-            refreshMainMenu();
-        });
-    </script>
-</body>
-</html>
+            <div id="badge-output">

@@ -5,314 +5,296 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Interactive Coffee Shop Game</title>
     <style>
-        :root {
-            --bg-color: #1a1d24;
-            --panel-bg: #232731;
-            --accent-blue: #2563eb;
-            --accent-blue-hover: #1d4ed8;
-            --text-main: #f3f4f6;
-            --text-muted: #9ca3af;
-        }
-
+        /* Base page alignment - resets everything cleanly */
         body {
             margin: 0;
             padding: 20px;
-            background-color: var(--bg-color);
-            color: var(--text-main);
+            background-color: #1a1d24;
+            color: #f3f4f6;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             display: flex;
-            flex-direction: column;
+            justify-content: center;
             align-items: center;
+            min-height: 100vh;
+            box-sizing: border-box;
             user-select: none;
         }
 
+        /* The Main Game Container - uses percentages so it cannot collapse */
         #game-container {
-            width: 800px;
-            background-color: var(--panel-bg);
+            width: 100%;
+            max-width: 850px;
+            background-color: #232731;
             border-radius: 12px;
-            padding: 24px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
-            position: relative;
+            padding: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.4);
             box-sizing: border-box;
         }
 
-        #game-canvas-wrapper {
+        /* 🗺️ THE FLOOR MAP - Uses full width percentages to prevent the black screen bug */
+        #game-floor-map {
             position: relative;
-            width: 752px; 
-            height: 400px;
+            width: 100%;
+            height: 380px;
             background-color: #12141c;
+            border: 3px solid #374151;
             border-radius: 8px;
             overflow: hidden;
             margin-bottom: 20px;
+            box-sizing: border-box;
         }
 
-        canvas {
-            display: block;
-            width: 752px;
-            height: 400px;
+        /* [🛒] SHOP BOX ACCENT BUTTON */
+        #shop-btn {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            background-color: #ff9f0a;
+            color: #000000;
+            border: none;
+            padding: 8px 14px;
+            border-radius: 6px;
+            font-weight: bold;
             cursor: pointer;
+            z-index: 10;
         }
 
-        #action-panel {
+        /* APPLIANCE LAYOUT SHELF (Behind the counter) */
+        .appliance-shelf {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            left: 120px;
+            display: flex;
+            justify-content: space-around;
+        }
+        .appliance {
+            background-color: #3b4252;
+            border-bottom: 4px solid #81a1c1;
+            color: #d8dee9;
+            padding: 6px 12px;
+            font-size: 11px;
+            border-radius: 4px;
+        }
+
+        /* THE BARISTA COUNTER LINE */
+        #barista-counter {
+            position: absolute;
+            top: 150px;
+            left: 0;
+            width: 100%;
+            height: 35px;
+            background-color: #2e3440;
+            border-top: 2px solid #4c566a;
+            border-bottom: 2px solid #4c566a;
+        }
+        #register-box {
+            position: absolute;
+            left: 40px;
+            top: -6px;
+            width: 25px;
+            height: 6px;
+            background-color: #ff9f0a;
+            border-radius: 2px;
+        }
+
+        /* ENTRANCE DOORWAYS */
+        #shop-doorway {
+            position: absolute;
+            bottom: 0;
+            right: 40px;
+            width: 90px;
+            height: 12px;
+            background-color: #10b981;
+            color: white;
+            font-size: 10px;
+            text-align: center;
+            font-weight: bold;
+            line-height: 12px;
+        }
+        #shop-doorway.closed { background-color: #ef4444; }
+
+        /* ALL ACTOR CIRCLE TOKENS */
+        .token {
+            position: absolute;
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: bold;
+            color: white;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            box-sizing: border-box;
+        }
+
+        #player-barista {
+            background-color: #2563eb;
+            border: 2px solid white;
+            left: 600px;
+            top: 90px;
+            z-index: 5;
+        }
+
+        .customer-dot { border: 2px solid transparent; }
+        .customer-dot.first-in-line { border-color: white; }
+
+        /* DIALOGUE ITEM BUBBLE */
+        .dialogue-bubble {
+            position: absolute;
+            background: white;
+            color: black;
+            font-size: 10px;
+            font-weight: bold;
+            padding: 3px 6px;
+            border-radius: 4px;
+            bottom: 38px;
+            white-space: nowrap;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        /* BUTTONS AND INTERACTION PANELS */
+        #control-panel {
             display: flex;
             justify-content: space-between;
-            align-items: center;
             margin-bottom: 20px;
-            height: 50px;
         }
-
-        .btn-action {
+        .game-btn {
             background-color: var(--accent-blue);
             color: white;
             border: none;
-            padding: 12px 24px;
-            font-size: 15px;
-            font-weight: 600;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: background-color 0.2s;
-        }
-        .btn-action:hover {
-            background-color: var(--accent-blue-hover);
-        }
-        .btn-action:disabled {
-            background-color: #374151;
-            color: #6b7280;
-            cursor: not-allowed;
-        }
-
-        .btn-door {
-            background-color: #10b981;
-        }
-        .btn-door.closed {
-            background-color: #ef4444;
-        }
-
-        .instructions {
-            color: var(--text-muted);
+            padding: 12px 20px;
             font-size: 14px;
-            margin-bottom: 20px;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
         }
+        .game-btn:disabled { background-color: #374151; color: #6b7280; cursor: not-allowed; }
+        #door-toggle-btn { background-color: #10b981; }
+        #door-toggle-btn.is-closed { background-color: #ef4444; }
 
-        #status-dashboard {
+        /* HUD METRICS DASHBOARD */
+        #hud-dashboard {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
             border-top: 1px solid #374151;
-            padding-top: 20px;
+            padding-top: 15px;
             text-align: center;
-            margin-bottom: 20px;
         }
+        .hud-box .title { color: var(--text-muted); font-size: 13px; margin-bottom: 4px; }
+        .hud-box .stat { font-size: 18px; font-weight: bold; }
 
-        .status-box .label {
-            color: var(--text-muted);
-            font-size: 14px;
-            margin-bottom: 6px;
-        }
-        .status-box .value {
-            font-size: 20px;
-            font-weight: bold;
-        }
-
-        .modal {
+        /* GAME OVERLAYS (SHOP / SMARTPHONE) */
+        .overlay-card {
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            border-radius: 20px;
+            border-radius: 16px;
             display: none;
             z-index: 20;
-            box-shadow: 0 25px 50px rgba(0,0,0,0.6);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.6);
             box-sizing: border-box;
         }
-
-        #phone-modal {
-            background: #000000;
-            border: 4px solid #374151;
-            width: 280px;
-            height: 460px;
-            padding: 20px 12px;
-        }
-        .phone-screen {
-            background: #1c1c1e;
-            height: 100%;
-            border-radius: 16px;
+        #phone-overlay {
+            background-color: #000000;
+            border: 4px solid #4b5563;
+            width: 260px;
+            height: 400px;
             padding: 15px;
+        }
+        .phone-display {
+            background-color: #1c1c1e;
+            height: 100%;
+            border-radius: 12px;
+            padding: 12px;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
             box-sizing: border-box;
         }
-        .phone-header {
-            text-align: center;
-            border-bottom: 1px solid #2c2c2e;
-            padding-bottom: 10px;
-            color: #30d158;
-            font-weight: bold;
-        }
-        .phone-body {
-            flex-grow: 1;
-            padding-top: 15px;
-            font-size: 13px;
-            line-height: 1.5;
-        }
-        .phone-body strong { color: #ff9f0a; }
-        .close-phone {
-            background: #ff3b30;
-            color: white;
-            border: none;
-            padding: 10px;
-            border-radius: 10px;
-            cursor: pointer;
-            font-weight: bold;
-            width: 100%;
-        }
-
-        #shop-modal {
-            background: #1e222b;
-            border: 2px solid #374151;
-            width: 400px;
+        #shop-overlay {
+            background-color: #1e222b;
+            border: 2px solid #4b5563;
+            width: 360px;
             padding: 20px;
         }
-        #shop-modal h3 { margin-top: 0; color: #ff9f0a; }
-        .shop-item {
+        .shop-row {
             display: flex;
             justify-content: space-between;
             align-items: center;
             background: #282e3d;
-            padding: 12px;
-            border-radius: 8px;
-            margin-bottom: 10px;
-        }
-        .shop-item-info h4 { margin: 0 0 4px 0; font-size: 14px; }
-        .shop-item-info p { margin: 0; font-size: 12px; color: var(--text-muted); }
-        .btn-buy {
-            background: #ff9f0a;
-            color: black;
-            border: none;
-            padding: 8px 12px;
+            padding: 10px;
             border-radius: 6px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-        .btn-buy:disabled {
-            background: #4b5563;
-            color: #9ca3af;
-            cursor: not-allowed;
-        }
-        .close-shop {
-            background: #ef4444; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; float: right;
+            margin-top: 10px;
         }
     </style>
 </head>
 <body>
 
     <div id="game-container">
-        <div id="game-canvas-wrapper">
-            <canvas id="gameCanvas" width="752" height="400"></canvas>
-        </div>
-
-        <div id="action-panel">
-            <button id="door-btn" class="btn-action btn-door">Shop Door: OPEN</button>
-            <button id="action-btn" class="btn-action" disabled>Walk behind Counter to Serve</button>
-        </div>
-
-        <div class="instructions">💡 <strong>Controls:</strong> Click to move. All text layers are securely inside the box. Click the Orange [SHOP] box in the top left to hire Barista Helpers!</div>
-
-        <div id="status-dashboard">
-            <div class="status-box">
-                <div class="label">Earnings</div>
-                <div id="stat-earnings" class="value">$0.00</div>
-            </div>
-            <div class="status-box">
-                <div class="label">Served</div>
-                <div id="stat-served" class="value">0 items</div>
-            </div>
-            <div class="status-box">
-                <div class="label">Helpers Hired</div>
-                <div id="stat-helpers" class="value">0</div>
-            </div>
-        </div>
-
-        <!-- Phone App Interface -->
-        <div id="phone-modal" class="modal">
-            <div class="phone-screen">
-                <div>
-                    <div class="phone-header">⚡ Delivery App</div>
-                    <div id="phone-content" class="phone-body"></div>
-                </div>
-                <button class="close-phone" onclick="closePhone()">Hand Off Order</button>
-            </div>
-        </div>
-
-        <!-- Staffing Upgrade Shop Layout -->
-        <div id="shop-modal" class="modal">
-            <button class="close-shop" onclick="toggleShop(false)">X</button>
-            <h3>Staffing & Business Upgrades</h3>
-            <div class="shop-item">
-                <div class="shop-item-info">
-                    <h4>Hire Assistant Barista</h4>
-                    <p>Automatically serves customers over time.</p>
-                </div>
-                <button id="buy-helper-btn" class="btn-buy" onclick="buyHelper()">$25.00</button>
-            </div>
-            <div class="shop-item">
-                <div class="shop-item-info">
-                    <h4>Premium Coffee Beans</h4>
-                    <p>Increases base tip earnings per cup by +$1.50.</p>
-                </div>
-                <button id="buy-beans-btn" class="btn-buy" onclick="buyBeans()">$40.00</button>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        const canvas = document.getElementById('gameCanvas');
-        const ctx = canvas.getContext('2d');
-
-        let earnings = 0.00;
-        let servedCount = 0;
-        let helpersCount = 0;
-        let itemBonus = 0.00;
-        let isDoorOpen = true;
-
-        let player = {
-            x: 550,
-            y: 110,
-            targetX: 550,
-            targetY: 110,
-            radius: 14,
-            speed: 7
-        };
-
-        let staffHelpers = [];
-
-        const counterY = 170; 
-        const counterHeight = 35;
-        const door = { x: 670, y: 340, width: 60, height: 12 };
-        const shopIcon = { x: 15, y: 15, w: 65, h: 30 }; // Widened for text instead of emoji
-
-        const menuPool = ['Mocha', 'Black Tea', 'Green Tea', 'Croissant', 'Muffin'];
-        const customerColors = ['#f59e0b', '#f97316', '#ef4444', '#a855f7'];
-        
-        let customerQueue = [];
-        let deliveryDrivers = [];
-        let activeDriverIndex = null;
-
-        const machines = [
-            { x: 200, y: 50, type: 'Espresso' },
-            { x: 380, y: 50, type: 'Tea Brewer' },
-            { x: 560, y: 50, type: 'Bakery Oven' }
-        ];
-
-        const driverNames = ['Dash-Mike', 'Uber-Sarah', 'Courier-Alex', 'Express-Jess'];
-
-        function spawnCustomer() {
-            if (!isDoorOpen || customerQueue.length >= 5) return;
-            const item = menuPool[Math.floor(Math.random() * menuPool.length)];
-            const color = customerColors[Math.floor(Math.random() * customerColors.length)];
+        <!-- Interactive Room Blueprint Window Box -->
+        <div id="game-floor-map" onclick="handleMapClick(event)">
             
-            customerQueue.push({ item, color, x: 80 + (customerQueue.length * 60), y: 260 });
-            updateUI();
-        }
+            <button id="shop-btn" onclick="openShop(true); event.stopPropagation();">SHOP [🛒]</button>
 
-        function spawnDriver() {
+            <div class="appliance-shelf">
+                <div class="appliance">Espresso Machine</div>
+                <div class="appliance">Tea Infuser</div>
+                <div class="appliance">Baking Oven</div>
+            </div>
+
+            <div id="barista-counter">
+                <div id="register-box"></div>
+            </div>
+
+            <!-- Dynamic Rendering Layer for Characters -->
+            <div id="character-layer">
+                <div id="player-barista" class="token">You</div>
+            </div>
+
+            <div id="shop-doorway">Door Open</div>
+        </div>
+
+        <!-- System Control Strip -->
+        <div id="control-panel">
+            <button id="door-toggle-btn" class="game-btn" onclick="toggleStoreDoor()">Shop Door: OPEN</button>
+            <button id="serve-customer-btn" class="game-btn" onclick="processOrderTicket()" disabled>Walk behind Counter to Serve</button>
+        </div>
+
+        <!-- Dashboard Panel -->
+        <div id="hud-dashboard">
+            <div class="hud-box">
+                <div class="title">Earnings</div>
+                <div id="hud-cash" class="stat">$0.00</div>
+            </div>
+            <div class="hud-box">
+                <div class="title">Items Served</div>
+                <div id="hud-served" class="stat">0 updates</div>
+            </div>
+            <div class="hud-box">
+                <div class="title">Staff Helpers</div>
+                <div id="hud-staff" class="stat">0</div>
+            </div>
+        </div>
+
+        <!-- Phone App Viewport Interface -->
+        <div id="phone-overlay" class="overlay-card">
+            <div class="phone-display">
+                <div>
+                    <div style="text-align:center; color:#30d158; font-weight:bold; border-bottom:1px solid #2c2c2e; padding-bottom:5px;">⚡ Courier App</div>
+                    <div id="phone-text-body" style="font-size:12px; padding-top:15px; line-height:1.5;"></div>
+                </div>
+                <button style="background:#ff3b30; color:white; border:none; padding:10px; border-radius:8px; font-weight:bold; cursor:pointer;" onclick="deliverOrderHandOff()">Complete Delivery</button>
+            </div>
+        </div>
+
+        <!-- Staffing Shop UI Overlay Layout -->
+        <div id="shop-overlay" class="overlay-card">
+            <button style="background:#ef4444; color:white; border:none; float:right; border-radius:4px; cursor:pointer; padding:3px 7px;" onclick="openShop(false)">X</button>
+            <h3 style="margin:0; color:#ff9f0a;">Hire Helpers & Upgrades</h3>
+            <div class="shop-row">
+                <div>

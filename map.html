@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>2D Coffee Shop Management Game</title>
+    <title>Interactive Coffee Shop Game</title>
     <style>
         :root {
             --bg-color: #1a1d24;
@@ -27,18 +27,19 @@
         }
 
         #game-container {
-            width: 100%;
-            max-width: 800px;
+            width: 800px;
             background-color: var(--panel-bg);
             border-radius: 12px;
             padding: 24px;
             box-shadow: 0 10px 25px rgba(0,0,0,0.3);
             position: relative;
+            box-sizing: border-box;
         }
 
         #game-canvas-wrapper {
             position: relative;
-            width: 100%;
+            width: 752px; /* Adjusted to fit neatly inside padding box */
+            height: 400px;
             background-color: #12141c;
             border-radius: 8px;
             overflow: hidden;
@@ -47,14 +48,15 @@
 
         canvas {
             display: block;
-            width: 100%;
-            height: auto;
+            width: 752px;
+            height: 400px;
             cursor: pointer;
         }
 
         #action-panel {
             display: flex;
-            justify-content: flex-end;
+            justify-content: space-between;
+            align-items: center;
             margin-bottom: 20px;
             height: 50px;
         }
@@ -77,6 +79,13 @@
             background-color: #374151;
             color: #6b7280;
             cursor: not-allowed;
+        }
+
+        .btn-door {
+            background-color: #10b981;
+        }
+        .btn-door.closed {
+            background-color: #ef4444;
         }
 
         .instructions {
@@ -104,24 +113,96 @@
             font-weight: bold;
         }
 
-        #tablet-modal {
+        /* Modals & Popups System */
+        .modal {
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
+            border-radius: 20px;
+            display: none;
+            z-index: 20;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.6);
+            box-sizing: border-box;
+        }
+
+        /* Phone Layout */
+        #phone-modal {
+            background: #000000;
+            border: 4px solid #374151;
+            width: 280px;
+            height: 460px;
+            padding: 20px 12px;
+        }
+        .phone-screen {
+            background: #1c1c1e;
+            height: 100%;
+            border-radius: 16px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            box-sizing: border-box;
+        }
+        .phone-header {
+            text-align: center;
+            border-bottom: 1px solid #2c2c2e;
+            padding-bottom: 10px;
+            color: #30d158;
+            font-weight: bold;
+        }
+        .phone-body {
+            flex-grow: 1;
+            padding-top: 15px;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+        .phone-body strong { color: #ff9f0a; }
+        .close-phone {
+            background: #ff3b30;
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            width: 100%;
+        }
+
+        /* Upgrade Shop Layout */
+        #shop-modal {
             background: #1e222b;
             border: 2px solid #374151;
-            border-radius: 12px;
-            width: 80%;
-            max-width: 400px;
+            width: 400px;
             padding: 20px;
-            display: none;
-            z-index: 10;
-            box-shadow: 0 20px 25px rgba(0,0,0,0.5);
         }
-        #tablet-modal h3 { margin-top: 0; color: var(--accent-blue); }
-        .recipe-list { margin: 15px 0; font-size: 14px; line-height: 1.6; color: var(--text-muted); }
-        .close-tablet {
+        #shop-modal h3 { margin-top: 0; color: #ff9f0a; }
+        .shop-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #282e3d;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+        .shop-item-info h4 { margin: 0 0 4px 0; font-size: 14px; }
+        .shop-item-info p { margin: 0; font-size: 12px; color: var(--text-muted); }
+        .btn-buy {
+            background: #ff9f0a;
+            color: black;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .btn-buy:disabled {
+            background: #4b5563;
+            color: #9ca3af;
+            cursor: not-allowed;
+        }
+        .close-shop {
             background: #ef4444; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; float: right;
         }
     </style>
@@ -130,15 +211,15 @@
 
     <div id="game-container">
         <div id="game-canvas-wrapper">
-            <!-- Consolidated pure graphic viewport canvas -->
-            <canvas id="gameCanvas" width="800" height="360"></canvas>
+            <canvas id="gameCanvas" width="752" height="400"></canvas>
         </div>
 
         <div id="action-panel">
-            <button id="action-btn" class="btn-action" disabled>Walk to Counter</button>
+            <button id="door-btn" class="btn-action btn-door">Shop Door: OPEN</button>
+            <button id="action-btn" class="btn-action" disabled>Walk behind Counter to Serve</button>
         </div>
 
-        <div class="instructions">Click anywhere on the floor map to move. Walk near the Counter register to fulfill customer orders.</div>
+        <div class="instructions">💡 <strong>Controls:</strong> Click to move. All text layers are securely inside the game framework window box. Click the 🛒 Shop Icon in the top left to hire Barista Helpers!</div>
 
         <div id="status-dashboard">
             <div class="status-box">
@@ -150,25 +231,40 @@
                 <div id="stat-served" class="value">0 cups</div>
             </div>
             <div class="status-box">
-                <div class="label">Queue Status</div>
-                <div id="stat-queue" class="value">5 waiting</div>
+                <div class="label">Helpers Hired</div>
+                <div id="stat-helpers" class="value">0</div>
             </div>
         </div>
 
-        <!-- POS Interactive Processing Overlay Window UI -->
-        <div id="tablet-modal">
-            <button class="close-tablet" onclick="toggleTablet(false)">X</button>
-            <h3>POS Order Management Tablet</h3>
-            <div id="tablet-content">
-                <p>No active orders selected.</p>
+        <!-- Interactive Delivery Phone UI App Layout -->
+        <div id="phone-modal" class="modal">
+            <div class="phone-screen">
+                <div>
+                    <div class="phone-header">⚡ Delivery App</div>
+                    <div id="phone-content" class="phone-body"></div>
+                </div>
+                <button class="close-phone" onclick="closePhone()">Hand Off Order</button>
             </div>
-            <div class="recipe-list">
-                <strong>Recipe Reference Book:</strong><br>
-                🍵 Tea (Green/Black) = Steep Leaves at Water Station<br>
-                ☕ Mocha = Espresso Base + Milk Froth + Cocoa Swirl<br>
-                🥐 Pastries = Grab direct from Counter Bakery Basket
+        </div>
+
+        <!-- Interactive Staffing Upgrade Shop Layout -->
+        <div id="shop-modal" class="modal">
+            <button class="close-shop" onclick="toggleShop(false)">X</button>
+            <h3>Staffing & Business Upgrades</h3>
+            <div class="shop-item">
+                <div class="shop-item-info">
+                    <h4>Hire Assistant Barista</h4>
+                    <p>Automatically serves customers over time.</p>
+                </div>
+                <button id="buy-helper-btn" class="btn-buy" onclick="buyHelper()">$25.00</button>
             </div>
-            <button id="craft-btn" class="btn-action" style="width:100%; margin-top:10px;">Serve Order</button>
+            <div class="shop-item">
+                <div class="shop-item-info">
+                    <h4>Premium Coffee Beans</h4>
+                    <p>Increases base tip earnings per cup by +$1.50.</p>
+                </div>
+                <button id="buy-beans-btn" class="btn-buy" onclick="buyBeans()">$40.00</button>
+            </div>
         </div>
     </div>
 
@@ -178,102 +274,44 @@
 
         let earnings = 0.00;
         let servedCount = 0;
+        let helpersCount = 0;
+        let itemBonus = 0.00;
+        let isDoorOpen = true;
 
-        // FIXED STARTING PLAYER CONFIGURATION (SAFE RIGHT SIDE OF CAFE)
+        // PLAYER CHARACTER
         let player = {
-            x: 680,
-            y: 180,
-            targetX: 680,
-            targetY: 180,
+            x: 550,
+            y: 110,
+            targetX: 550,
+            targetY: 110,
             radius: 14,
-            speed: 6
+            speed: 7
         };
 
-        const menuPool = ['Green Tea', 'Black Tea', 'Mocha', 'Croissant', 'Muffin'];
-        const customerColors = ['#f59e0b', '#f97316', '#ef4444', '#a855f7', '#3b82f6'];
+        // STAFF HELPERS ARRAY
+        let staffHelpers = [];
+
+        // ROOM MATRIX BOUNDARIES & MAP BOX DATA
+        const counterY = 170; 
+        const counterHeight = 35;
+        const door = { x: 670, y: 340, width: 60, height: 12 };
+        const shopIcon = { x: 15, y: 15, w: 40, h: 40 };
+
+        const menuPool = ['Mocha', 'Black Tea', 'Green Tea', 'Croissant', 'Muffin'];
+        const customerColors = ['#f59e0b', '#f97316', '#ef4444', '#a855f7'];
+        
         let customerQueue = [];
-        const maxQueueSize = 5;
-        const counterLineY = 180;
-        const registerX = 380; 
+        let deliveryDrivers = [];
+        let activeDriverIndex = null;
 
-        const nodes = {
-            counter: { x: 420, y: 180 },
-            tableA: { x: 180, y: 280, label: 'Table A' },
-            tableB: { x: 360, y: 280, label: 'Table B' },
-            tableC: { x: 580, y: 280, label: 'Table C' }
-        };
+        const machines = [
+            { x: 200, y: 50, type: 'Espresso' },
+            { x: 380, y: 50, type: 'Tea Brewer' },
+            { x: 560, y: 50, type: 'Bakery Oven' }
+        ];
 
-        function addNewCustomer() {
-            if (customerQueue.length >= maxQueueSize) return;
-            const randomProduct = menuPool[Math.floor(Math.random() * menuPool.length)];
-            const randomColor = customerColors[Math.floor(Math.random() * customerColors.length)];
-            const names = ['Oliver', 'Emma', 'Liam', 'Sophia', 'Lucas'];
-            
-            customerQueue.push({
-                item: randomProduct,
-                color: randomColor,
-                name: names[Math.floor(Math.random() * names.length)]
-            });
-            updateDashboardUI();
-        }
+        const driverNames = ['Dash-Mike', 'Uber-Sarah', 'Courier-Alex', 'Express-Jess'];
 
-        // Generate baseline customers lineup instantly on file launch
-        for(let i = 0; i < 5; i++) {
-            addNewCustomer();
-        }
-
-        canvas.addEventListener('click', (e) => {
-            const rect = canvas.getBoundingClientRect();
-            // Secure pixel tracking conversion independent of monitor size scaling
-            player.targetX = (e.clientX - rect.left) * (canvas.width / rect.width);
-            player.targetY = (e.clientY - rect.top) * (canvas.height / rect.height);
-        });
-
-        const actionBtn = document.getElementById('action-btn');
-        actionBtn.addEventListener('click', () => {
-            if(customerQueue.length === 0) return;
-            const distToCounter = Math.hypot(player.x - nodes.counter.x, player.y - nodes.counter.y);
-            if(distToCounter < 70) {
-                openPrepTablet(customerQueue[0]);
-            }
-        });
-
-        function openPrepTablet(order) {
-            const modal = document.getElementById('tablet-modal');
-            const content = document.getElementById('tablet-content');
-            const craftBtn = document.getElementById('craft-btn');
-            
-            modal.style.display = 'block';
-            content.innerHTML = `<p style='font-size:16px;'>Active order for client <strong>${order.name}</strong>:<br><br><span style='color:#2563eb; font-size:22px; font-weight:bold;'>👉 ${order.item}</span></p>`;
-            
-            craftBtn.onclick = () => {
-                customerQueue.shift(); 
-                earnings += order.item.includes('Tea') ? 4.50 : 5.75;
-                servedCount++;
-                
-                modal.style.display = 'none';
-                addNewCustomer();
-                updateDashboardUI();
-            };
-        }
-
-        function toggleTablet(show) {
-            document.getElementById('tablet-modal').style.display = show ? 'block' : 'none';
-        }
-
-        function updateDashboardUI() {
-            document.getElementById('stat-earnings').innerText = `$${earnings.toFixed(2)}`;
-            document.getElementById('stat-served').innerText = `${servedCount} cup${servedCount === 1 ? '' : 's'}`;
-            document.getElementById('stat-queue').innerText = `${customerQueue.length} waiting`;
-            
-            if(customerQueue.length > 0) {
-                const distToCounter = Math.hypot(player.x - nodes.counter.x, player.y - nodes.counter.y);
-                if(distToCounter < 70) {
-                    actionBtn.disabled = false;
-                    actionBtn.innerText = `Open Tablet: Serve ${customerQueue[0].name}`;
-                } else {
-                    actionBtn.disabled = true;
-                    actionBtn.innerText = "Walk to Counter Register";
-                }
-            } else {
-                actionBtn.innerText = "No Orders Pending";
+        function spawnCustomer() {
+            if (!isDoorOpen || customerQueue.length >= 5) return;
+            const item = menuPool[Math.floor(Math.random() * menuPool.length)];

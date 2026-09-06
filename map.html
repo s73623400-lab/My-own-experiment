@@ -3,280 +3,204 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Coffee Shop Game - Shift Management</title>
+    <title>Coffee Shop Simulator - Grid System</title>
     <style>
         body {
-            background-color: #F5EBE0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #1a1a1a;
+            color: white;
+            font-family: sans-serif;
             text-align: center;
             margin: 0;
             padding: 20px 0;
         }
 
-        #game-stats {
-            background-color: #6F4E37;
-            color: white;
-            padding: 10px 30px;
+        #top-ui {
+            background-color: #333;
+            padding: 10px 20px;
             display: inline-block;
-            border-radius: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
             font-weight: bold;
-            font-size: 18px;
-            margin-bottom: 15px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
 
-        /* Standard view container viewport */
-        .screen-container {
-            width: 500px;
-            height: 380px;
+        /* Main Game Canvas Board Viewport */
+        #game-board {
+            width: 750px;
+            height: 400px;
             margin: 0 auto;
-            border: 5px solid #4A3728;
+            background-color: #262626;
+            border: 4px solid #444;
             border-radius: 12px;
             position: relative;
             overflow: hidden;
-            box-shadow: 0 8px 16px rgba(0,0,0,0.15);
         }
 
-        /* SCREEN A: OUTSIDE STREET MAP */
-        #outside-screen {
-            background-color: #a3d9c9;
-            width: 100%;
-            height: 100%;
+        /* 1. Circle Road Asset Container (Curved road mockup on left) */
+        #circle-road {
             position: absolute;
-        }
-
-        .road {
-            position: absolute;
-            bottom: 0;
-            width: 100%;
-            height: 80px;
-            background-color: #555555;
-            border-top: 4px dashed white;
-        }
-
-        #player-dot {
-            width: 24px;
-            height: 24px;
-            background-color: #007bff;
-            border: 3px solid white;
+            left: -80px;
+            top: 20px;
+            width: 200px;
+            height: 360px;
+            border: 40px solid #555;
             border-radius: 50%;
-            position: absolute;
-            bottom: 25px;
-            left: 30px;
-            cursor: pointer;
-            transition: all 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            border-left: none;
+            border-bottom: none;
+            pointer-events: none;
         }
 
-        .selected {
-            background-color: #00ffcc !important;
-            box-shadow: 0 0 15px #00ffcc;
-        }
-
-        #coffee-shop-building {
+        /* 2. Cafe Interior Grid Framework (Right panel map space) */
+        #cafe-grid {
             position: absolute;
-            top: 50px;
-            left: 175px;
-            width: 150px;
-            height: 120px;
-            background-color: #d7ccc8;
-            border: 4px solid #5d4037;
+            right: 20px;
+            top: 20px;
+            width: 500px;
+            height: 360px;
+            background-color: #2d2d2d;
+            border: 2px solid #3a3a3a;
             border-radius: 8px;
-            cursor: pointer;
-        }
-
-        /* SCREEN B: INSIDE KITCHEN COUNTER SHOP LOOK */
-        #inside-screen {
-            background-color: #D7CCC8; /* Cozy wood flooring tone */
-            width: 100%;
-            height: 100%;
-            position: absolute;
-            display: none; /* Hidden until walk-in completes */
-        }
-
-        .kitchen-counter {
-            position: absolute;
-            bottom: 0;
-            width: 100%;
-            height: 120px;
-            background-color: #5D4037; /* Rich mahogany kitchen bar desk */
-            border-top: 6px solid #4E3629;
-            display: flex;
-            justify-content: space-around;
-            align-items: center;
-            padding: 0 10px;
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            grid-template-rows: repeat(4, 1fr);
+            gap: 2px;
+            padding: 4px;
             box-sizing: border-box;
         }
 
-        /* Interactive Counter Appliance Boxes */
-        .appliance {
-            background-color: #CFD8DC;
-            border: 3px solid #78909C;
-            border-radius: 6px;
-            padding: 10px 15px;
-            font-size: 12px;
-            font-weight: bold;
-            color: #37474F;
+        /* Grid Tile blocks */
+        .tile {
+            background-color: #333333;
+            border-radius: 4px;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
             cursor: pointer;
-            user-select: none;
-            transition: transform 0.1s;
         }
+        .tile:hover { background-color: #3d3d3d; }
 
-        .appliance:active { transform: scale(0.92); }
+        /* Furniture Layout nodes */
+        .door-node { background-color: #007bff !important; color: white; font-weight: bold; font-size: 11px; }
+        .coffee-node { background-color: #b71c1c !important; } /* Red Coffee Icon base */
+        .table-node { background-color: #f57f17 !important; }  /* Yellow dining tables */
 
-        /* Customer Box Asset Window */
-        #customer-bubble {
+        /* Interactive character dots elements */
+        .player-token {
+            width: 20px;
+            height: 20px;
+            background-color: #00ffcc;
+            border: 2px solid white;
+            border-radius: 50%;
             position: absolute;
-            top: 70px;
-            left: 150px;
-            width: 200px;
-            background: white;
-            border: 3px solid #6F4E37;
-            border-radius: 12px;
-            padding: 15px;
-            font-weight: bold;
+            box-shadow: 0 0 10px #00ffcc;
+            z-index: 10;
         }
 
-        /* CINEMATIC TRANSITION BLACK OUT SCREEN FADER */
-        #fade-overlay {
+        .patron-token {
+            width: 16px;
+            height: 16px;
+            background-color: #9c27b0; /* Purple customer dot */
+            border-radius: 50%;
             position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: black;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.6s ease-in-out;
-            z-index: 99;
         }
 
-        #game-alert {
+        #status-bar {
+            background-color: #222;
+            padding: 8px 15px;
+            border-radius: 20px;
+            display: inline-block;
+            font-size: 14px;
             margin-top: 15px;
-            font-size: 16px;
-            font-weight: bold;
-            color: #4A3728;
+            color: #ccc;
         }
     </style>
 </head>
 <body>
 
-    <div id="game-stats">
-        📆 <span id="day-label">Day 1</span> &nbsp;|&nbsp; 💰 Cash: $<span id="cash-label">0</span>
+    <div id="top-ui">
+        📆 Day: <span id="day-val">1</span> &nbsp;|&nbsp; 💰 Earnings: $<span id="cash-val">0</span>
     </div>
 
-    <div class="screen-container">
-        <!-- The Cinematic Fade Canvas Layer -->
-        <div id="fade-overlay"></div>
+    <div id="game-board">
+        <!-- Curved road layout track -->
+        <div id="circle-road"></div>
 
-        <!-- STAGE 1: OUTSIDE ROAD SCENE -->
-        <div id="outside-screen">
-            <div id="coffee-shop-building" onclick="enterShop()">
-                <span style="background:#d32f2f; color:white; font-size:11px; display:block; padding:2px; font-weight:bold;">☕ CAFE PORTAL</span>
-            </div>
-            <div class="road"><p style="color:white; font-weight:bold; line-height:80px; margin:0; letter-spacing:2px;">CIRCLE ROAD</p></div>
-            <div id="player-dot" onclick="selectToken(event)"></div>
-        </div>
+        <!-- The interactive Top-down Interior grid framework -->
+        <div id="cafe-grid">
+            <!-- Row 1 Tiles -->
+            <div class="tile door-node" onclick="interactTile('door')">Door: Open</div>
+            <div class="tile"></div>
+            <div class="tile"></div>
+            <div class="tile"></div>
+            <div class="tile coffee-node" onclick="interactTile('coffee')">☕</div>
 
-        <!-- STAGE 2: INSIDE ROOM SCENE -->
-        <div id="inside-screen">
-            <div style="background: #4E3629; color: white; padding: 6px; font-weight: bold;">STORE INTERIOR</div>
-            
-            <!-- Customer Counter Space -->
-            <div id="customer-bubble">
-                🧑‍💼 Customer: <br>
-                <span id="order-text" style="color:#d32f2f;">Waiting for shift...</span>
-            </div>
+            <!-- Row 2 Tiles -->
+            <div class="tile"><div class="player-token" id="player-dot"></div></div>
+            <div class="tile"></div>
+            <div class="tile"><div class="patron-token" style="background:#e91e63;"></div></div>
+            <div class="tile"></div>
+            <div class="tile table-node" onclick="interactTile('table')">🪑</div>
 
-            <!-- Appliance Inventory Dock -->
-            <div class="kitchen-counter">
-                <div class="appliance" onclick="interactMachine('espresso')">☕ Espresso Maker</div>
-                <div class="appliance" onclick="interactMachine('milk')">🥛 Milk Frother</div>
-                <div class="appliance" onclick="interactMachine('serve')">✅ Serve Order</div>
-            </div>
+            <!-- Row 3 Tiles -->
+            <div class="tile"></div>
+            <div class="tile"></div>
+            <div class="tile"><div class="patron-token" style="background:#9c27b0;"></div></div>
+            <div class="tile"></div>
+            <div class="tile table-node" onclick="interactTile('table')">🪑</div>
+
+            <!-- Row 4 Tiles -->
+            <div class="tile"></div>
+            <div class="tile"></div>
+            <div class="tile"></div>
+            <div class="tile"></div>
+            <div class="tile table-node" onclick="interactTile('table')">🪑</div>
         </div>
     </div>
 
-    <div id="game-alert">Click your blue player dot token to start!</div>
+    <div id="status-bar">
+        Active Patrons: 3 (Ethan ordering...)
+    </div>
 
     <script>
-        // Track state variables memory variables
-        let day = 1;
-        let cash = 0;
-        let isSelected = false;
-        let hasEspresso = false;
-        let hasFroth = false;
-        let currentTargetOrder = "Latte";
+        let dayCounter = 1;
+        let revenue = 0;
+        let machineCharged = false;
 
-        function selectToken(e) {
-            e.stopPropagation();
-            isSelected = true;
-            document.getElementById('player-dot').classList.add('selected');
-            document.getElementById('game-alert').innerText = "Token Ready! Click the Cafe storefront structure to enter.";
-        }
-
-        // TRIGGER CINEMATIC BLACK SCREEN FADE TRANSITION
-        function enterShop() {
-            if (!isSelected) {
-                document.getElementById('game-alert').innerText = "⚠️ Select your player dot first before entering the shop premises!";
-                return;
-            }
-
-            // Move token dot up to door portal
-            const dot = document.getElementById('player-dot');
-            dot.style.left = '238px';
-            dot.style.bottom = '180px';
-
-            setTimeout(function() {
-                // 1. Fade the screen out to black
-                const fader = document.getElementById('fade-overlay');
-                fader.style.opacity = '1';
-
-                setTimeout(function() {
-                    // 2. Midpoint swap visible display scenes hidden layout states
-                    document.getElementById('outside-screen').style.display = 'none';
-                    document.getElementById('inside-screen').style.display = 'block';
-                    
-                    // Reset order goals inside kitchen counter text metrics
-                    hasEspresso = false;
-                    hasFroth = false;
-                    document.getElementById('order-text').innerText = "wants a Hot Latte! (£5)";
-                    document.getElementById('game-alert').innerText = "Inside kitchen! Click Espresso Maker and Milk Frother to brew.";
-
-                    // 3. Fade screen back in smoothly from black
-                    fader.style.opacity = '0';
-                }, 600);
-            }, 800);
-        }
-
-        // INTERACTING WITH KITCHEN MACHINES CORE ENGINE RULES
-        function interactMachine(type) {
-            const alertText = document.getElementById('game-alert');
+        function interactTile(type) {
+            const status = document.getElementById('status-bar');
             
-            if (type === 'espresso') {
-                hasEspresso = true;
-                alertText.innerText = "🎵 Espresso brewed into cup!";
-            } else if (type === 'milk') {
-                hasFroth = true;
-                alertText.innerText = "🎵 Steamed milk prepared!";
-            } else if (type === 'serve') {
-                if (hasEspresso && hasFroth) {
-                    // Complete shift reward sequence state updates
-                    cash += 5;
-                    day += 1;
+            if (type === 'door') {
+                status.innerText = "🚪 Door configuration active. Welcoming new patrons inside!";
+            } else if (type === 'coffee') {
+                machineCharged = true;
+                status.innerText = "☕ Coffee machine activated! Espresso shot extracted and ready.";
+                // Teleport player dot visually to the machine grid tile coordinate slot
+                movePlayerVisual(4); 
+            } else if (type === 'table') {
+                if (machineCharged) {
+                    revenue += 12;
+                    dayCounter += 1;
                     
-                    document.getElementById('cash-label').innerText = cash;
-                    document.getElementById('day-label').innerText = "Day " + day;
+                    document.getElementById('cash-val').innerText = revenue;
+                    document.getElementById('day-val').innerText = dayCounter;
                     
-                    alertText.innerText = "🎉 Served correctly! Shift complete. Returning out to map lane for Day " + day;
+                    status.innerText = "🎉 Order delivered to the dining table! Advanced to Day " + dayCounter;
+                    machineCharged = false;
+                    
+                    // Return player token dot back to counter baseline slot
+                    movePlayerVisual(5);
+                } else {
+                    status.innerText = "⚠️ That table needs coffee! Hit the Red Coffee Machine tile first to brew.";
+                }
+            }
+        }
 
-                    // Trigger smooth return fade out back onto map framework
-                    setTimeout(function() {
-                        const fader = document.getElementById('fade-overlay');
-                        fader.style.opacity = '1';
+        function movePlayerVisual(tileIndex) {
+            const player = document.getElementById('player-dot');
+            const targetTile = document.getElementsByClassName('tile')[tileIndex];
+            targetTile.appendChild(player); // Snaps the player dot component cleanly into that exact grid box item
+        }
+    </script>
 
-                        setTimeout(function() {
-                            // Reset back out onto map
-                            document.getElementById('inside-screen').style.display = 'none';
-                            document.getElementById('outside-screen').style.display = 'block';
-                            
-                            // Reset token location variables
+</body>
+</html>

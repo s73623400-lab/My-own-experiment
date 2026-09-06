@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>2D Coffee Shop Management Game</title>
     <style>
-        /* Base styles matching the sleek, dark aesthetic */
         :root {
             --bg-color: #1a1d24;
             --panel-bg: #232731;
@@ -37,7 +36,6 @@
             position: relative;
         }
 
-        /* 2D Top-Down Viewport Canvas styling */
         #game-canvas-wrapper {
             position: relative;
             width: 100%;
@@ -48,7 +46,12 @@
             margin-bottom: 20px;
         }
 
-        /* UI elements layered over the canvas mimicking your UI design */
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
         .order-bubble {
             position: absolute;
             background: #ffffff;
@@ -62,6 +65,7 @@
             transform: translate(-50%, -100%);
             white-space: nowrap;
             display: none;
+            z-index: 5;
         }
         .order-bubble::after {
             content: '';
@@ -76,14 +80,17 @@
 
         .player-label {
             position: absolute;
-            color: var(--accent-blue);
+            color: #3b82f6;
+            background: rgba(18, 20, 28, 0.8);
+            padding: 2px 6px;
+            border-radius: 4px;
             font-size: 11px;
             font-weight: bold;
-            transform: translate(-50%, 12px);
+            transform: translate(-50%, 15px);
             pointer-events: none;
+            z-index: 5;
         }
 
-        /* Interaction Panel overlaying the action buttons */
         #action-panel {
             display: flex;
             justify-content: flex-end;
@@ -111,14 +118,12 @@
             cursor: not-allowed;
         }
 
-        /* Tip text */
         .instructions {
             color: var(--text-muted);
             font-size: 14px;
             margin-bottom: 20px;
         }
 
-        /* Bottom Status dashboard row matching the provided image */
         #status-dashboard {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -138,7 +143,6 @@
             font-weight: bold;
         }
 
-        /* Customization Controls Area */
         #controls-panel {
             border-top: 1px solid #374151;
             padding-top: 15px;
@@ -162,7 +166,6 @@
             accent-color: var(--accent-blue);
         }
 
-        /* Tablet Window Layout for crafting/recipes */
         #tablet-modal {
             position: absolute;
             top: 50%;
@@ -179,7 +182,7 @@
             box-shadow: 0 20px 25px rgba(0,0,0,0.5);
         }
         #tablet-modal h3 { margin-top: 0; color: var(--accent-blue); }
-        .recipe-list { margin: 15px 0; font-size: 14px; line-height: 1.6; }
+        .recipe-list { margin: 15px 0; font-size: 14px; line-height: 1.6; color: var(--text-muted); }
         .close-tablet {
             background: #ef4444; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; float: right;
         }
@@ -188,23 +191,18 @@
 <body>
 
     <div id="game-container">
-        <!-- Visual Game Arena -->
-        <div id="game-canvas-wrapper" id="map-floor">
+        <div id="game-canvas-wrapper">
             <canvas id="gameCanvas" width="800" height="320"></canvas>
-            
-            <!-- Dynamic Floating Overlays -->
             <div id="customer-bubble" class="order-bubble">Green Tea</div>
             <div id="player-tag" class="player-label">You</div>
         </div>
 
-        <!-- Dynamic Action Context Trigger Menu Button -->
         <div id="action-panel">
             <button id="action-btn" class="btn-action" disabled>Walk to Counter</button>
         </div>
 
         <div class="instructions">Click cafe floor to move. Walk to counter to accept/fulfill orders.</div>
 
-        <!-- Exact Dashboard UI Replication -->
         <div id="status-dashboard">
             <div class="status-box">
                 <div class="label">Earnings</div>
@@ -220,7 +218,6 @@
             </div>
         </div>
 
-        <!-- Custom Speed Controls Sliders -->
         <div id="controls-panel">
             <div class="control-group">
                 <label>Customer Spawn Speed Interval</label>
@@ -231,7 +228,6 @@
             </div>
         </div>
 
-        <!-- Interactive POS Tablet Workspace App Interface -->
         <div id="tablet-modal">
             <button class="close-tablet" onclick="toggleTablet(false)">X</button>
             <h3>POS Order Management Tablet</h3>
@@ -244,58 +240,71 @@
                 ☕ Mocha = Espresso Base + Milk Froth + Chocolate Pump<br>
                 🥐 Pastries = Grab from Bakery Tray
             </div>
-            <button id="craft-btn" class="btn-action" style="width:100%; display:none;">Complete & Prep Item</button>
+            <button id="craft-btn" class="btn-action" style="width:100%; display:none; margin-top:10px;">Complete & Prep Item</button>
         </div>
     </div>
 
     <script>
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
+        const wrapper = document.getElementById('game-canvas-wrapper');
 
-        // GAME SOUNDS / STATE MANAGEMENT
         let earnings = 0.00;
         let servedCount = 0;
-        let spawnInterval = 30; // seconds
+        let spawnInterval = 30; 
 
-        // FIXED RIGHT SPAWN SPECIFICATION
+        // FIXED RIGHT SPAWN POSITION
         let player = {
-            x: 640, // Perfect coordinate on the right side of the canvas floor layout
-            y: 110,
-            targetX: 640,
-            targetY: 110,
+            x: 700, 
+            y: 160,
+            targetX: 700,
+            targetY: 160,
             radius: 14,
-            speed: 5
+            speed: 6
         };
 
-        // CUSTOMERS QUEUE STATE
         const menuPool = ['Green Tea', 'Black Tea', 'Mocha', 'Croissant', 'Muffin'];
         const customerColors = ['#f59e0b', '#f97316', '#ef4444', '#a855f7', '#3b82f6'];
         let customerQueue = [];
         const maxQueueSize = 5;
-        const counterLineY = 110;
-        const counterStartX = 340; // Queue stacks horizontally leftwards from register counter line
+        const counterLineY = 160;
+        const counterStartX = 340; 
 
-        // Static Room Layout Infrastructure Map Coordinates
         const nodes = {
-            counter: { x: 380, y: 110, radius: 10 },
-            tableA: { x: 180, y: 220, label: 'Table A' },
-            tableB: { x: 360, y: 220, label: 'Table B' },
-            tableC: { x: 540, y: 220, label: 'Table C' }
+            counter: { x: 420, y: 160 },
+            tableA: { x: 180, y: 250, label: 'Table A' },
+            tableB: { x: 360, y: 250, label: 'Table B' },
+            tableC: { x: 580, y: 250, label: 'Table C' }
         };
-
-        // Initialize Base Queue
-        for(let i=0; i < 5; i++) {
-            addNewCustomer();
-        }
 
         function addNewCustomer() {
             if (customerQueue.length >= maxQueueSize) return;
-            
             const randomProduct = menuPool[Math.floor(Math.random() * menuPool.length)];
             const randomColor = customerColors[Math.floor(Math.random() * customerColors.length)];
+            const names = ['Oliver', 'Emma', 'Liam', 'Sophia', 'Lucas'];
             
             customerQueue.push({
                 item: randomProduct,
                 color: randomColor,
-                name: ['Oliver', 'Emma', 'Liam', 'Sophia', 'Lucas'][Math.floor(Math.random()*5)]
+                name: names[Math.floor(Math.random() * names.length)]
             });
+            updateDashboardUI();
+        }
+
+        // Initialize Queue
+        for(let i = 0; i < 5; i++) {
+            addNewCustomer();
+        }
+
+        canvas.addEventListener('click', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const clickX = (e.clientX - rect.left) * (canvas.width / rect.width);
+            const clickY = (e.clientY - rect.top) * (canvas.height / rect.height);
+            
+            player.targetX = clickX;
+            player.targetY = clickY;
+        });
+
+        document.getElementById('spawn-slider').addEventListener('input', (e) => {
+            spawnInterval = e.target.value;
+            document.getElementById('spawn-value').innerText = spawnInterval + 's';

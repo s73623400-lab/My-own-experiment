@@ -24,19 +24,99 @@
             position: relative;
         }
 
-        /* Horror Creepy Smiley Face Element */
-        .horror-face {
+        /* 1. ANIMATED HORROR FACE CONTAINER */
+        .horror-face-container {
             position: absolute;
+            top: 12%;
+            right: 8%;
+            width: 380px;
+            height: 380px;
+            transform: rotate(12deg);
+            opacity: 0.75;
+            z-index: 1;
+            /* Subtly animates the face like it's breathing */
+            animation: floatingDistortion 4s ease-in-out infinite alternate;
+        }
+
+        @keyframes floatingDistortion {
+            0% { transform: rotate(12deg) scale(1); opacity: 0.65; }
+            100% { transform: rotate(14deg) scale(1.03); opacity: 0.85; filter: drop-shadow(0 0 15px #ef4444); }
+        }
+
+        /* Glowing Slit-Pupil Eyes */
+        .horror-eye {
+            position: absolute;
+            width: 85px;
+            height: 35px;
+            background: #1a0202;
+            border: 2px solid #b91c1c;
+            border-radius: 90% 10% 90% 10%; /* Makes eyes look unnaturally sharp and tilted */
+            box-shadow: 0 0 20px #7f1d1d;
+        }
+
+        .horror-eye::after {
+            content: '';
+            position: absolute;
+            top: 15%;
+            left: 48%;
+            width: 6px;
+            height: 24px;
+            background: #ef4444;
+            border-radius: 50%;
+            box-shadow: 0 0 12px #ffffff;
+        }
+
+        .eye-left {
             top: 40px;
-            right: 60px;
-            font-size: 8rem;
-            color: #b91c1c;
-            font-weight: bold;
-            letter-spacing: -10px;
-            transform: rotate(25deg);
-            opacity: 0.7;
-            user-select: none;
-            text-shadow: 0 0 20px rgba(185, 28, 28, 0.6);
+            left: 20px;
+            transform: scaleX(-1) rotate(25deg); /* Flips the left eye shape */
+        }
+
+        .eye-right {
+            top: 25px;
+            right: 20px;
+            transform: rotate(20deg);
+        }
+
+        /* 2. CUSTOM HAUNTED JAGGED SMILE */
+        .horror-mouth {
+            position: absolute;
+            bottom: 30px;
+            left: 40px;
+            width: 280px;
+            height: 120px;
+            background: #110000;
+            border: 3px solid #b91c1c;
+            border-radius: 10% 10% 85% 85%; /* Hollow wide grin dynamic shape */
+            box-shadow: 0 10px 30px rgba(185, 28, 28, 0.5);
+            overflow: hidden; /* Clips the inner elements to form teeth */
+        }
+
+        /* Top Row of Teeth */
+        .horror-mouth::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: 0;
+            width: 100%;
+            height: 30px;
+            /* Pure CSS repeating linear gradients to render sharp triangles */
+            background: repeating-linear-gradient(45deg, transparent, transparent 10px, #b91c1c 10px, #b91c1c 20px),
+                        repeating-linear-gradient(-45deg, transparent, transparent 10px, #b91c1c 10px, #b91c1c 20px);
+            background-blend-mode: multiply;
+        }
+
+        /* Bottom Row of Teeth */
+        .horror-mouth::after {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            left: 0;
+            width: 100%;
+            height: 30px;
+            background: repeating-linear-gradient(45deg, transparent, transparent 12px, #991b1b 12px, #991b1b 24px),
+                        repeating-linear-gradient(-45deg, transparent, transparent 12px, #991b1b 12px, #991b1b 24px);
+            background-blend-mode: multiply;
         }
 
         .menu-container {
@@ -68,9 +148,8 @@
             display: none !important;
         }
 
-        /* Essential Interactive Button Styling */
         .menu-btn {
-            background: rgba(15, 0, 0, 0.8);
+            background: rgba(10, 0, 0, 0.9);
             border: 2px solid #450a0a;
             color: #b91c1c;
             padding: 1.2rem 2rem;
@@ -78,7 +157,7 @@
             font-weight: bold;
             text-align: left;
             border-radius: 4px;
-            cursor: pointer; /* Makes cursor change to a pointer hand when hovering */
+            cursor: pointer;
             transition: all 0.2s ease;
             width: 100%;
             display: flex;
@@ -87,7 +166,6 @@
             text-transform: uppercase;
         }
 
-        /* Hover response glow */
         .menu-btn:hover:not(:disabled) {
             background: #b91c1c;
             color: #000000;
@@ -122,18 +200,23 @@
 </head>
 <body>
 
-    <div class="horror-face">👁️👃👁️<br>&nbsp;&nbsp;👅</div>
+    <!-- Redesigned Haunted Horror Face Setup -->
+    <div class="horror-face-container">
+        <div class="horror-eye eye-left"></div>
+        <div class="horror-eye eye-right"></div>
+        <div class="horror-mouth"></div>
+    </div>
 
     <div class="menu-container">
         <h1 class="game-title">The Hollow Cafe</h1>
         
-        <!-- Main Screen: Using actual clickable <button> entities -->
+        <!-- Main Screen -->
         <div id="mainScreen" class="menu-screen">
             <button id="mainNewGameBtn" class="menu-btn">New Game</button>
             <button id="mainContinueBtn" class="menu-btn">Continue</button>
         </div>
 
-        <!-- 5 Slots Screen hidden until mainNewGameBtn is clicked -->
+        <!-- 5 Slots Screen -->
         <div id="slotScreen" class="menu-screen hidden">
             <h2 id="slotScreenTitle" style="font-size: 1.2rem; margin-bottom: 0.5rem; color: #7f1d1d;">SELECT TARGET FILES</h2>
             
@@ -191,60 +274,21 @@
                 });
             }
 
-            // Click listener linking Main New Game Button to Slot view
             mainNewGameBtn.addEventListener('click', () => {
                 mainScreen.classList.add('hidden');
                 slotScreen.classList.remove('hidden');
                 setupSlotButtons('new');
             });
 
-            // Click listener linking Main Continue Button to Slot view
             mainContinueBtn.addEventListener('click', () => {
                 mainScreen.classList.add('hidden');
                 slotScreen.classList.remove('hidden');
                 setupSlotButtons('continue');
             });
 
-            // Click listener returning user backward to Home Screen
             backBtn.addEventListener('click', () => {
                 slotScreen.classList.add('hidden');
                 mainScreen.classList.remove('hidden');
                 refreshMainMenu();
             });
 
-            // Click listener logic handling slot assignments
-            slotButtons.forEach(btn => {
-                btn.addEventListener('click', () => {
-                    const slotId = btn.getAttribute('data-slot');
-                    const slotKey = SAVE_PREFIX + slotId;
-                    const existingSave = localStorage.getItem(slotKey);
-
-                    if (currentMode === 'new') {
-                        if (existingSave) {
-                            const overwrite = confirm(`Warning: Data exists in Slot ${slotId}. Overwrite progress?`);
-                            if (!overwrite) return;
-                        }
-
-                        const newGameData = {
-                            day: 1,
-                            time: new Date().toLocaleDateString()
-                        };
-                        localStorage.setItem(slotKey, JSON.stringify(newGameData));
-                        alert(`Starting New Game in Slot ${slotId}... entering the Cafe.`);
-                        
-                    } else if (currentMode === 'continue' && existingSave) {
-                        const data = JSON.parse(existingSave);
-                        alert(`Resuming Slot ${slotId} on Day ${data.day}...`);
-                    }
-                    
-                    slotScreen.classList.add('hidden');
-                    mainScreen.classList.remove('hidden');
-                    refreshMainMenu();
-                });
-            });
-
-            refreshMainMenu();
-        });
-    </script>
-</body>
-</html>

@@ -105,8 +105,8 @@
         
         <!-- DATA HUD BAR -->
         <div class="hud-banner">
-            <div class="hud-item">LOCATION: <span class="hud-value" style="color: #ff9f0a;">SAFE HOUSE</span></div>
-            <div class="hud-item">CLOCK METRIC: <span id="hud-time" class="hud-value">01:00 AM</span></div>
+            <div class="hud-item">LOCATION: <span class="hud-value" style="color: #ff9f0a;">4-ROOM RESIDENCE</span></div>
+            <div class="hud-item">CLOCK METRIC: <span id="hud-time" class="hud-value">01:05 AM</span></div>
             <div class="hud-item">THREAT SECTOR: <span id="hud-threat" class="hud-value" style="color: #22c55e;">STABLE</span></div>
         </div>
 
@@ -118,7 +118,7 @@
         <!-- NOTIFICATION DIALOGUE BAR CONTAINER -->
         <div class="dialogue-box">
             <div id="dialogueSpeaker" class="dialogue-speaker">LOG CONSOLE</div>
-            <div id="dialogueText" class="dialogue-text">Move your red character with WASD keys. Aim your flashlight beam with the MOUSE cursor. Avoid touching the purple television anomaly...</div>
+            <div id="dialogueText" class="dialogue-text">Explore the house using WASD keys. Aim your flashlight with the mouse. Walk up to objects to examine them.</div>
         </div>
     </div>
 
@@ -129,13 +129,42 @@
         let loopId = null;
 
         // Player configurations starting metrics centered inside our cottage bedroom
-        let player = { x: 150, y: 220, size: 12, speed: 3.0, angle: 0 };
+        let player = { x: 100, y: 100, size: 14, speed: 2.8, angle: 0 };
         
-        // Static Furniture Obstructions Layout blueprint mapping coordinates inside your small house
-        let mapObjects = [
-            { x: 380, y: 140, w: 70, h: 140, color: '#78350f', label: 'Wooden Dining Table' },
-            { x: 100, y: 60, w: 120, h: 50, color: '#3f3f46', label: 'Cozy Couch Bed' },
-            { x: 650, y: 50, w: 60, h: 60, color: '#4c1d95', label: 'Static Television Anomaly' }
+        // 🧱 BIRDS-EYE STRUCTURAL INTERIOR WALLS (x, y, width, height)
+        let houseWalls = [
+            // Boundary Outer Walls limits
+            { x: 20, y: 20, w: 754, h: 12 },   // Top boundary wall
+            { x: 20, y: 418, w: 754, h: 12 },  // Bottom boundary wall
+            { x: 20, y: 20, w: 12, h: 410 },   // Left boundary wall
+            { x: 762, y: 20, w: 12, h: 410 },  // Right boundary wall
+            
+            // Interior Room Dividers (with cutouts left open for doors)
+            { x: 240, y: 20, w: 12, h: 150 },  // Bedroom wall top branch
+            { x: 240, y: 230, w: 12, h: 200 }, // Bedroom wall bottom branch
+            
+            { x: 240, y: 230, w: 260, h: 12 }, // Central hallway horizontal wall divider
+            { x: 500, y: 230, w: 12, h: 200 }  // Bathroom/Kitchen divider vertical axis
+        ];
+        
+        // 🪑 HOUSE FURNITURE LAYOUT BLOCKS MAP INDEX
+        let houseFurniture = [
+            // Bedroom Objects (Top-Left)
+            { x: 45, y: 45, w: 80, h: 65, color: '#3f3f46', label: 'Couch Bed' },
+            { x: 190, y: 45, w: 40, h: 40, color: '#4c1d95', label: 'Static Television Anomaly' },
+            
+            // Living Room Objects (Bottom-Left / Center corridor)
+            { x: 50, y: 320, w: 140, h: 50, color: '#7f1d1d', label: 'Long Leather Sofa' },
+            { x: 100, y: 265, w: 40, h: 40, color: '#78350f', label: 'Coffee Table' },
+            
+            // Kitchen Objects (Top-Right Area)
+            { x: 380, y: 45, w: 160, h: 35, color: '#1e293b', label: 'Kitchen Marble Counter Countertop' },
+            { x: 670, y: 45, w: 60, h: 60, color: '#475569', label: 'Industrial Refrigerator Unit' },
+            { x: 420, y: 130, w: 80, h: 60, color: '#b45309', label: 'Wooden Dining Table' },
+            
+            // Bathroom Objects (Bottom-Right Area)
+            { x: 700, y: 350, w: 50, h: 55, color: '#e2e8f0', label: 'Porcelain Bath Station' },
+            { x: 530, y: 375, w: 40, h: 35, color: '#cbd5e1', label: 'Utility Sink Base' }
         ];
 
         let keys = { w: false, a: false, s: false, d: false };
@@ -146,14 +175,13 @@
             document.getElementById('dialogueText').innerText = text;
         }
 
-        // 🛡️ CRITICAL RUNTIME AUTO-START: Fires the game engine immediately without any buttons
+        // AUTO-START UP INITIALIZER ROUTINE
         window.onload = function() {
-            // Instantly wire movement trackers to your device
             window.addEventListener('keydown', handleKeyDown);
             window.addEventListener('keyup', handleKeyUp);
             canvas.addEventListener('mousemove', handleMouseMove);
 
-            setConsoleLog("HOUSE DIARY", "Your smartphone buzzes on the nightstand. WASD keys move your character circle. Sweeping your mouse targets your 🔦 light beam.");
+            setConsoleLog("HOUSE ENTRIES", "WASD keys move your character blueprint across the rooms grid. Sweep your MOUSE to focus the vision beam.");
             
             if (loopId) cancelAnimationFrame(loopId);
             loopId = requestAnimationFrame(houseEngineFrameCycle);
@@ -173,7 +201,6 @@
             mouse.y = e.clientY - rect.top;
         }
 
-        // MAIN RECURSIVE PHYSICS ANIMATION LOOPS CORE WHEEL
         function houseEngineFrameCycle() {
             updatePlayerPhysicsVectors();
             renderHouseGraphicsLayers();
@@ -189,29 +216,38 @@
             if (keys.a) nextX -= player.speed;
             if (keys.d) nextX += player.speed;
 
-            // Constrain avatar directly inside absolute map exterior walls boundaries metrics
-            if (nextX > player.size && nextX < canvas.width - player.size) {
-                if (!evaluateFurnitureCollisions(nextX, player.y)) player.x = nextX;
+            // Check walls first, then verify furniture obstacle metrics bounds
+            if (!evaluateWallCollisions(nextX, player.y) && !evaluateFurnitureCollisions(nextX, player.y)) {
+                player.x = nextX;
             }
-            if (nextY > player.size && nextY < canvas.height - player.size) {
-                if (!evaluateFurnitureCollisions(player.x, nextY)) player.y = nextY;
+            if (!evaluateWallCollisions(player.x, nextY) && !evaluateFurnitureCollisions(player.x, nextY)) {
+                player.y = nextY;
             }
 
-            // Continuous calculation of head perspective orientation pointing towards pointing mouse dots
             player.angle = Math.atan2(mouse.y - player.y, mouse.x - player.x);
         }
 
+        function evaluateWallCollisions(x, y) {
+            for (let wall of houseWalls) {
+                if (x + player.size > wall.x && x - player.size < wall.x + wall.w &&
+                    y + player.size > wall.y && y - player.size < wall.y + wall.h) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
         function evaluateFurnitureCollisions(x, y) {
-            for (let obj of mapObjects) {
+            for (let obj of houseFurniture) {
                 if (x + player.size > obj.x && x - player.size < obj.x + obj.w &&
                     y + player.size > obj.y && y - player.size < obj.y + obj.h) {
                     
                     if (obj.label.includes('Anomaly')) {
-                        setConsoleLog("⚠️ RADAR BLIP", "The screen hums with white noise. An unnatural draft fills the bedroom corridors.");
-                        document.getElementById('hud-threat').innerText = "ANOMALY INBOUND";
+                        setConsoleLog("⚠️ MONTIOR SCREEN", "The television screen buzzes with static sound ripples... something is near.");
+                        document.getElementById('hud-threat').innerText = "ALERT DETECTED";
                         document.getElementById('hud-threat').style.color = "#ef4444";
                     } else {
-                        setConsoleLog("INTERACTION", `Approaching your house asset structures: [${obj.label}]. Path blocked.`);
+                        setConsoleLog("EXAMINE", `Checking object: [ ${obj.label} ]`);
                     }
                     return true;
                 }
@@ -220,41 +256,11 @@
         }
 
         function renderHouseGraphicsLayers() {
-            // 1. Solid pitch floor backdrop configuration draw mapping actions
+            // 1. Core floor plane background backdrop
             ctx.fillStyle = '#060608';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            // 2. Render subtle home tiling framework grids floor vectors lines
-            ctx.strokeStyle = '#121215';
+            // 2. Tile grid map coordinate gridlines
+            ctx.strokeStyle = '#0f0f12';
             ctx.lineWidth = 1;
             for(let i=0; i<canvas.width; i+=40) {
-                ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, canvas.height); ctx.stroke();
-            }
-            for(let j=0; j<canvas.height; j+=40) {
-                ctx.beginPath(); ctx.moveTo(0, j); ctx.lineTo(canvas.width, j); ctx.stroke();
-            }
-
-            // 3. Render house structure shapes layouts blueprints onto canvas deck matrix channels
-            for (let obj of mapObjects) {
-                ctx.fillStyle = obj.color;
-                ctx.fillRect(obj.x, obj.y, obj.w, obj.h);
-                ctx.strokeStyle = '#2d1515';
-                ctx.strokeRect(obj.x, obj.y, obj.w, obj.h);
-            }
-
-            // 4. 🔦 HORROR AMBIENT LIGHTING MASK FLASHLIGHT LENS SHROUD ENGINE
-            ctx.save();
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.97)'; // Creates heavy midnight blinders layout view
-            ctx.beginPath();
-            ctx.rect(0, 0, canvas.width, canvas.height);
-            
-            // Slice structural paths cutting a visual key wedge out pointing towards aiming crosshairs markers
-            ctx.moveTo(player.x, player.y);
-            const raySpreadArc = 0.40; // Focal spread width size configurations for ray beams
-            ctx.arc(player.x, player.y, 220, player.angle - raySpreadArc, player.angle + raySpreadArc);
-            ctx.lineTo(player.x, player.y);
-            
-            ctx.closePath();
-            ctx.fill('evenodd'); // Erases masking block internally where flashlight field paths overlap geometries
-            ctx.restore();
-

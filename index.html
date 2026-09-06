@@ -21,14 +21,39 @@
             justify-content: flex-start;
             padding-left: 10%;
             overflow: hidden;
+            position: relative;
         }
 
+        /* 1. UNCANNY CREEPYPASTA FACE CONTAINER */
+        .horror-face-container {
+            position: absolute;
+            top: 15%;
+            right: 8%;
+            width: 320px;
+            height: 320px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 25px;
+            z-index: 1;
+            filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.15));
+            animation: slowTwitch 6s ease-in-out infinite alternate;
+        }
+
+        /* Subtle organic movement to look alive */
+        @keyframes slowTwitch {
+            0% { transform: rotate(0deg) scale(1); }
+            50% { transform: rotate(2deg) scale(0.98); }
+            100% { transform: rotate(-1deg) scale(1.02); }
+ 
         .menu-container {
             display: flex;
             flex-direction: column;
             gap: 2rem;
             max-width: 450px;
             width: 100%;
+            z-index: 10;
         }
 
         .game-title {
@@ -103,16 +128,35 @@
 </head>
 <body>
 
+    <!-- Precise Creepypasta Analogue Horror Face Block -->
+    <div class="horror-face-container">
+        <div class="eyes-row">
+            <div class="uncanny-eye"></div>
+            <div class="uncanny-eye"></div>
+        </div>
+        <div class="uncanny-mouth">
+            <div class="tooth"></div>
+            <div class="tooth"></div>
+            <div class="tooth"></div>
+            <div class="tooth"></div>
+            <div class="tooth"></div>
+            <div class="tooth"></div>
+            <div class="tooth"></div>
+            <div class="tooth"></div>
+            <div class="tooth"></div>
+        </div>
+    </div>
+
     <div class="menu-container">
         <h1 class="game-title">The Hollow Cafe</h1>
         
-        <!-- Main Screen Selection options -->
+        <!-- Main Screen -->
         <div id="mainScreen" class="menu-screen">
             <button id="mainNewGameBtn" class="menu-btn">New Game</button>
             <button id="mainContinueBtn" class="menu-btn">Continue</button>
         </div>
 
-        <!-- 5 New Game Slots Sub-Screen -->
+        <!-- 5 Slots Screen -->
         <div id="slotScreen" class="menu-screen hidden">
             <h2 id="slotScreenTitle" style="font-size: 1.2rem; margin-bottom: 0.5rem; color: #7f1d1d;">SELECT TARGET FILES</h2>
             
@@ -140,7 +184,6 @@
             const backBtn = document.getElementById('backBtn');
             const slotButtons = document.querySelectorAll('.slot-btn');
 
-            // Evaluates local storage files on script initialization
             function refreshMainMenu() {
                 let hasAnySave = false;
                 for (let i = 1; i <= 5; i++) {
@@ -152,7 +195,6 @@
                 mainContinueBtn.disabled = !hasAnySave;
             }
 
-            // Sets labels dynamically according to chosen navigation pathway
             function setupSlotButtons(mode) {
                 currentMode = mode;
                 slotScreenTitle.textContent = mode === 'new' ? 'CHOOSE A SLOT TO OVERWRITE:' : 'LOAD ACTIVE ENTRY:';
@@ -172,7 +214,6 @@
                 });
             }
 
-            // Click interaction wiring for primary interface elements
             mainNewGameBtn.addEventListener('click', () => {
                 mainScreen.classList.add('hidden');
                 slotScreen.classList.remove('hidden');
@@ -191,39 +232,3 @@
                 refreshMainMenu();
             });
 
-            // Allocation click configurations for save states
-            slotButtons.forEach(btn => {
-                btn.addEventListener('click', () => {
-                    const slotId = btn.getAttribute('data-slot');
-                    const slotKey = SAVE_PREFIX + slotId;
-                    const existingSave = localStorage.getItem(slotKey);
-
-                    if (currentMode === 'new') {
-                        if (existingSave) {
-                            const overwrite = confirm(`Warning: Data exists in Slot ${slotId}. Overwrite progress?`);
-                            if (!overwrite) return;
-                        }
-
-                        const newGameData = {
-                            day: 1,
-                            time: new Date().toLocaleDateString()
-                        };
-                        localStorage.setItem(slotKey, JSON.stringify(newGameData));
-                        alert(`Starting New Game in Slot ${slotId}... entering the Cafe.`);
-                        
-                    } else if (currentMode === 'continue' && existingSave) {
-                        const data = JSON.parse(existingSave);
-                        alert(`Resuming Slot ${slotId} on Day ${data.day}...`);
-                    }
-                    
-                    slotScreen.classList.add('hidden');
-                    mainScreen.classList.remove('hidden');
-                    refreshMainMenu();
-                });
-            });
-
-            refreshMainMenu();
-        });
-    </script>
-</body>
-</html>

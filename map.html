@@ -38,7 +38,7 @@
 
         #game-canvas-wrapper {
             position: relative;
-            width: 752px; /* Adjusted to fit neatly inside padding box */
+            width: 752px; 
             height: 400px;
             background-color: #12141c;
             border-radius: 8px;
@@ -113,7 +113,6 @@
             font-weight: bold;
         }
 
-        /* Modals & Popups System */
         .modal {
             position: absolute;
             top: 50%;
@@ -126,7 +125,6 @@
             box-sizing: border-box;
         }
 
-        /* Phone Layout */
         #phone-modal {
             background: #000000;
             border: 4px solid #374151;
@@ -169,7 +167,6 @@
             width: 100%;
         }
 
-        /* Upgrade Shop Layout */
         #shop-modal {
             background: #1e222b;
             border: 2px solid #374151;
@@ -219,7 +216,7 @@
             <button id="action-btn" class="btn-action" disabled>Walk behind Counter to Serve</button>
         </div>
 
-        <div class="instructions">💡 <strong>Controls:</strong> Click to move. All text layers are securely inside the game framework window box. Click the 🛒 Shop Icon in the top left to hire Barista Helpers!</div>
+        <div class="instructions">💡 <strong>Controls:</strong> Click to move. All text layers are securely inside the box. Click the Orange [SHOP] box in the top left to hire Barista Helpers!</div>
 
         <div id="status-dashboard">
             <div class="status-box">
@@ -228,7 +225,7 @@
             </div>
             <div class="status-box">
                 <div class="label">Served</div>
-                <div id="stat-served" class="value">0 cups</div>
+                <div id="stat-served" class="value">0 items</div>
             </div>
             <div class="status-box">
                 <div class="label">Helpers Hired</div>
@@ -236,7 +233,7 @@
             </div>
         </div>
 
-        <!-- Interactive Delivery Phone UI App Layout -->
+        <!-- Phone App Interface -->
         <div id="phone-modal" class="modal">
             <div class="phone-screen">
                 <div>
@@ -247,7 +244,7 @@
             </div>
         </div>
 
-        <!-- Interactive Staffing Upgrade Shop Layout -->
+        <!-- Staffing Upgrade Shop Layout -->
         <div id="shop-modal" class="modal">
             <button class="close-shop" onclick="toggleShop(false)">X</button>
             <h3>Staffing & Business Upgrades</h3>
@@ -278,7 +275,6 @@
         let itemBonus = 0.00;
         let isDoorOpen = true;
 
-        // PLAYER CHARACTER
         let player = {
             x: 550,
             y: 110,
@@ -288,14 +284,12 @@
             speed: 7
         };
 
-        // STAFF HELPERS ARRAY
         let staffHelpers = [];
 
-        // ROOM MATRIX BOUNDARIES & MAP BOX DATA
         const counterY = 170; 
         const counterHeight = 35;
         const door = { x: 670, y: 340, width: 60, height: 12 };
-        const shopIcon = { x: 15, y: 15, w: 40, h: 40 };
+        const shopIcon = { x: 15, y: 15, w: 65, h: 30 }; // Widened for text instead of emoji
 
         const menuPool = ['Mocha', 'Black Tea', 'Green Tea', 'Croissant', 'Muffin'];
         const customerColors = ['#f59e0b', '#f97316', '#ef4444', '#a855f7'];
@@ -315,3 +309,10 @@
         function spawnCustomer() {
             if (!isDoorOpen || customerQueue.length >= 5) return;
             const item = menuPool[Math.floor(Math.random() * menuPool.length)];
+            const color = customerColors[Math.floor(Math.random() * customerColors.length)];
+            
+            customerQueue.push({ item, color, x: 80 + (customerQueue.length * 60), y: 260 });
+            updateUI();
+        }
+
+        function spawnDriver() {

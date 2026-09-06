@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Barista Employment Registry</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background-color: #1a1d24;
+            color: #f3f4f6;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            user-select: none;
+        }
+
+        .registry-card {
+            width: 100%;
+            max-width: 480px;
+            background-color: #232731;
+            border: 2px solid #374151;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+            box-sizing: border-box;
+        }
+
+        h2 {
+            margin-top: 0;
+            color: #ff9f0a;
+            font-size: 22px;
+            border-bottom: 2px solid #374151;
+            padding-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        label {
+            font-size: 13px;
+            color: #9ca3af;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        input[type="text"] {
+            background-color: #12141c;
+            border: 1px solid #4b5563;
+            border-radius: 6px;
+            padding: 12px;
+            color: #ffffff;
+            font-size: 15px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        input[type="text"]:focus {
+            border-color: #2563eb;
+        }
+
+        /* 🗓️ FADED GHOST TEXT STYLE SPECIFICATION */
+        .faded-hint-text {
+            font-size: 13px;
+            color: rgba(156, 163, 175, 0.35); /* Deeply muted transparency */
+            font-style: italic;
+            margin-top: 2px;
+        }
+
+        .btn-submit {
+            width: 100%;
+            background-color: #2563eb;
+            color: white;
+            border: none;
+            padding: 14px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            margin-top: 10px;
+        }
+
+        .btn-submit:hover {
+            background-color: #1d4ed8;
+        }
+
+        /* Generated Badge Output Section */
+        #badge-output {
+            margin-top: 25px;
+            background-color: #12141c;
+            border: 1px dashed #ff9f0a;
+            border-radius: 8px;
+            padding: 15px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="registry-card">
+        <h2>Shift Registry File</h2>
+        
+        <!-- Input Block 1: Barista Name -->
+        <div class="form-group">
+            <label for="username">Staff Name:</label>
+            <input type="text" id="username" placeholder="E.g. Zack" autocomplete="off">
+        </div>
+
+        <!-- Input Block 2: Place of Birth -->
+        <div class="form-group">
+            <label for="birthplace">Place of Birth:</label>
+            <input type="text" id="birthplace" placeholder="E.g. London" autocomplete="off">
+        </div>
+
+        <!-- Input Block 3: Random Faded Timestamp System Hint -->
+        <div class="form-group">
+            <label>Registry Time Metric:</label>
+            <div id="dynamic-date" class="faded-hint-text">System calculated DOB placeholder...</div>
+        </div>
+
+        <!-- Input Block 4: Coffee Branding Custom Input -->
+        <div class="form-group">
+            <label for="coffeename">Coffee Name Alias:</label>
+            <input type="text" id="coffeename" placeholder="E.g. Espresso King" autocomplete="off">
+        </div>
+
+        <button class="btn-submit" onclick="generateStaffBadge()">Lock File & Start Shift</button>
+
+        <!-- Dynamic Output Receipt Box -->
+        <div id="badge-output">
+            <span style="color:#ff9f0a; font-weight:bold; font-size:12px; text-transform:uppercase;">Verified Profile Locked:</span>
+            <p style="margin: 8px 0 4px 0; font-size:15px;" id="output-line-1"></p>
+            <p style="margin: 0; font-size:13px; color:#9ca3af;" id="output-line-2"></p>
+        </div>
+    </div>
+
+    <script>
+        // Generate a random retro birthday stamp to display inside the ghost font text container
+        function generateRandomDOB() {
+            const startYear = 1985;
+            const endYear = 2005;
+            const randomYear = Math.floor(Math.random() * (endYear - startYear + 1)) + startYear;
+            const randomMonth = Math.floor(Math.random() * 12) + 1;
+            const randomDay = Math.floor(Math.random() * 28) + 1;
+            
+            // Format string nicely with padding zeroes
+            const formattedDate = `${randomDay.toString().padStart(2, '0')}/${randomMonth.toString().padStart(2, '0')}/${randomYear}`;
+            document.getElementById('dynamic-date').innerText = `DOB Auto-Generated: ${formattedDate} (Faded Verification Token)`;
+        }
+
+        // Action workflow script to save parameters
+        function generateStaffBadge() {
+            const name = document.getElementById('username').value.trim() || "Zack";
+            const place = document.getElementById('birthplace').value.trim() || "Circle Road Sector";
+            const coffeeAlias = document.getElementById('coffeename').value.trim() || "Mocha Barista";
+
+            const outputBox = document.getElementById('badge-output');
+            const line1 = document.getElementById('output-line-1');
+            const line2 = document.getElementById('output-line-2');
+
+            // Format feedback strings
+            line1.innerHTML = `Welcome to the grid, <strong>${name}</strong> [Alias: <em>${coffeeAlias}</em>]`;
+            line2.innerHTML = `📍 Origin Verified: ${place} | Security clearance approved.`;
+            
+            outputBox.style.display = 'block';
+
+            // Optional integration step hook: Redirect to game screen after 2.5 seconds
+            /* 
+            setTimeout(() => {
+                window.location.href = 'map.html';
+            }, 2500); 
+            */
+        }
+
+        // Initialize random ghost parameters instantly on page load execution
+        generateRandomDOB();
+    </script>
+</body>
+</html>

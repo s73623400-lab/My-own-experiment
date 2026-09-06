@@ -235,8 +235,6 @@
         const ctx = canvas.getContext('2d');
 
         const SAVE_PREFIX = 'hollow_cafe_slot_';
-        
-        // 🛡️ CRITICAL FIX: Setup fallback default credentials so the game loads even if localStorage is empty
         let currentProfile = { name: "Zack", alias: "Espresso King" };
 
         let gameDay = 1;
@@ -259,7 +257,6 @@
         let mouse = { x: 0, y: 0 };
 
         window.onload = function() {
-            // 🛡️ CRITICAL FIX: Safe data-check parsing loop wrapper
             try {
                 let slotId = localStorage.getItem('hollow_cafe_current_configuring_slot') || '1';
                 let raw = localStorage.getItem(SAVE_PREFIX + slotId);
@@ -267,9 +264,8 @@
                     currentProfile = JSON.parse(raw);
                 }
             } catch (e) {
-                console.log("No save file detected, using profile placeholders.");
+                console.log("No profile save link found; running fallback parameters.");
             }
-            
             document.getElementById('screenDesc').innerText = `Staff Logged: ${currentProfile.name.toUpperCase()} [Alias: ${currentProfile.alias.toUpperCase()}]. Welcome to your barista cycle logs.`;
         };
 
@@ -295,3 +291,9 @@
             else if (currentGameState === "MIDNIGHT_ALERT_PENDING") {
                 currentGameState = "HORROR_SHIFT";
                 modal.style.display = 'none';
+                document.getElementById('dayShiftUI').style.display = 'none'; 
+                
+                gameHour = 1;
+                isPm = false; 
+                updateHudDisplays();
+                

@@ -39,7 +39,6 @@
         #game-canvas-wrapper {
             position: relative;
             width: 100%;
-            height: 320px;
             background-color: #12141c;
             border-radius: 8px;
             overflow: hidden;
@@ -49,46 +48,8 @@
         canvas {
             display: block;
             width: 100%;
-            height: 100%;
-        }
-
-        .order-bubble {
-            position: absolute;
-            background: #ffffff;
-            color: #111827;
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: bold;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
-            pointer-events: none;
-            transform: translate(-50%, -100%);
-            white-space: nowrap;
-            display: none;
-            z-index: 5;
-        }
-        .order-bubble::after {
-            content: '';
-            position: absolute;
-            bottom: -5px;
-            left: 50%;
-            transform: translateX(-50%);
-            border-width: 5px 5px 0;
-            border-style: solid;
-            border-color: #ffffff transparent;
-        }
-
-        .player-label {
-            position: absolute;
-            color: #3b82f6;
-            background: rgba(18, 20, 28, 0.8);
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-size: 11px;
-            font-weight: bold;
-            transform: translate(-50%, 15px);
-            pointer-events: none;
-            z-index: 5;
+            height: auto;
+            cursor: pointer;
         }
 
         #action-panel {
@@ -143,29 +104,6 @@
             font-weight: bold;
         }
 
-        #controls-panel {
-            border-top: 1px solid #374151;
-            padding-top: 15px;
-        }
-        .control-group {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-        .control-group label {
-            color: var(--text-muted);
-            font-size: 14px;
-        }
-        .slider-wrapper {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-        input[type="range"] {
-            flex: 1;
-            accent-color: var(--accent-blue);
-        }
-
         #tablet-modal {
             position: absolute;
             top: 50%;
@@ -192,16 +130,15 @@
 
     <div id="game-container">
         <div id="game-canvas-wrapper">
-            <canvas id="gameCanvas" width="800" height="320"></canvas>
-            <div id="customer-bubble" class="order-bubble">Green Tea</div>
-            <div id="player-tag" class="player-label">You</div>
+            <!-- Consolidated pure graphic viewport canvas -->
+            <canvas id="gameCanvas" width="800" height="360"></canvas>
         </div>
 
         <div id="action-panel">
             <button id="action-btn" class="btn-action" disabled>Walk to Counter</button>
         </div>
 
-        <div class="instructions">Click cafe floor to move. Walk to counter to accept/fulfill orders.</div>
+        <div class="instructions">Click anywhere on the floor map to move. Walk near the Counter register to fulfill customer orders.</div>
 
         <div id="status-dashboard">
             <div class="status-box">
@@ -218,47 +155,36 @@
             </div>
         </div>
 
-        <div id="controls-panel">
-            <div class="control-group">
-                <label>Customer Spawn Speed Interval</label>
-                <div class="slider-wrapper">
-                    <input type="range" id="spawn-slider" min="5" max="45" value="30">
-                    <span id="spawn-value">30s</span>
-                </div>
-            </div>
-        </div>
-
+        <!-- POS Interactive Processing Overlay Window UI -->
         <div id="tablet-modal">
             <button class="close-tablet" onclick="toggleTablet(false)">X</button>
             <h3>POS Order Management Tablet</h3>
             <div id="tablet-content">
-                <p>No orders currently being actively prepared.</p>
+                <p>No active orders selected.</p>
             </div>
             <div class="recipe-list">
-                <strong>Recipe Book Helper:</strong><br>
-                🍵 Green Tea / Black Tea = Steep Leaves at Kettle<br>
-                ☕ Mocha = Espresso Base + Milk Froth + Chocolate Pump<br>
-                🥐 Pastries = Grab from Bakery Tray
+                <strong>Recipe Reference Book:</strong><br>
+                🍵 Tea (Green/Black) = Steep Leaves at Water Station<br>
+                ☕ Mocha = Espresso Base + Milk Froth + Cocoa Swirl<br>
+                🥐 Pastries = Grab direct from Counter Bakery Basket
             </div>
-            <button id="craft-btn" class="btn-action" style="width:100%; display:none; margin-top:10px;">Complete & Prep Item</button>
+            <button id="craft-btn" class="btn-action" style="width:100%; margin-top:10px;">Serve Order</button>
         </div>
     </div>
 
     <script>
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
-        const wrapper = document.getElementById('game-canvas-wrapper');
 
         let earnings = 0.00;
         let servedCount = 0;
-        let spawnInterval = 30; 
 
-        // FIXED RIGHT SPAWN POSITION
+        // FIXED STARTING PLAYER CONFIGURATION (SAFE RIGHT SIDE OF CAFE)
         let player = {
-            x: 700, 
-            y: 160,
-            targetX: 700,
-            targetY: 160,
+            x: 680,
+            y: 180,
+            targetX: 680,
+            targetY: 180,
             radius: 14,
             speed: 6
         };
@@ -267,14 +193,14 @@
         const customerColors = ['#f59e0b', '#f97316', '#ef4444', '#a855f7', '#3b82f6'];
         let customerQueue = [];
         const maxQueueSize = 5;
-        const counterLineY = 160;
-        const counterStartX = 340; 
+        const counterLineY = 180;
+        const registerX = 380; 
 
         const nodes = {
-            counter: { x: 420, y: 160 },
-            tableA: { x: 180, y: 250, label: 'Table A' },
-            tableB: { x: 360, y: 250, label: 'Table B' },
-            tableC: { x: 580, y: 250, label: 'Table C' }
+            counter: { x: 420, y: 180 },
+            tableA: { x: 180, y: 280, label: 'Table A' },
+            tableB: { x: 360, y: 280, label: 'Table B' },
+            tableC: { x: 580, y: 280, label: 'Table C' }
         };
 
         function addNewCustomer() {
@@ -291,20 +217,63 @@
             updateDashboardUI();
         }
 
-        // Initialize Queue
+        // Generate baseline customers lineup instantly on file launch
         for(let i = 0; i < 5; i++) {
             addNewCustomer();
         }
 
         canvas.addEventListener('click', (e) => {
             const rect = canvas.getBoundingClientRect();
-            const clickX = (e.clientX - rect.left) * (canvas.width / rect.width);
-            const clickY = (e.clientY - rect.top) * (canvas.height / rect.height);
-            
-            player.targetX = clickX;
-            player.targetY = clickY;
+            // Secure pixel tracking conversion independent of monitor size scaling
+            player.targetX = (e.clientX - rect.left) * (canvas.width / rect.width);
+            player.targetY = (e.clientY - rect.top) * (canvas.height / rect.height);
         });
 
-        document.getElementById('spawn-slider').addEventListener('input', (e) => {
-            spawnInterval = e.target.value;
-            document.getElementById('spawn-value').innerText = spawnInterval + 's';
+        const actionBtn = document.getElementById('action-btn');
+        actionBtn.addEventListener('click', () => {
+            if(customerQueue.length === 0) return;
+            const distToCounter = Math.hypot(player.x - nodes.counter.x, player.y - nodes.counter.y);
+            if(distToCounter < 70) {
+                openPrepTablet(customerQueue[0]);
+            }
+        });
+
+        function openPrepTablet(order) {
+            const modal = document.getElementById('tablet-modal');
+            const content = document.getElementById('tablet-content');
+            const craftBtn = document.getElementById('craft-btn');
+            
+            modal.style.display = 'block';
+            content.innerHTML = `<p style='font-size:16px;'>Active order for client <strong>${order.name}</strong>:<br><br><span style='color:#2563eb; font-size:22px; font-weight:bold;'>👉 ${order.item}</span></p>`;
+            
+            craftBtn.onclick = () => {
+                customerQueue.shift(); 
+                earnings += order.item.includes('Tea') ? 4.50 : 5.75;
+                servedCount++;
+                
+                modal.style.display = 'none';
+                addNewCustomer();
+                updateDashboardUI();
+            };
+        }
+
+        function toggleTablet(show) {
+            document.getElementById('tablet-modal').style.display = show ? 'block' : 'none';
+        }
+
+        function updateDashboardUI() {
+            document.getElementById('stat-earnings').innerText = `$${earnings.toFixed(2)}`;
+            document.getElementById('stat-served').innerText = `${servedCount} cup${servedCount === 1 ? '' : 's'}`;
+            document.getElementById('stat-queue').innerText = `${customerQueue.length} waiting`;
+            
+            if(customerQueue.length > 0) {
+                const distToCounter = Math.hypot(player.x - nodes.counter.x, player.y - nodes.counter.y);
+                if(distToCounter < 70) {
+                    actionBtn.disabled = false;
+                    actionBtn.innerText = `Open Tablet: Serve ${customerQueue[0].name}`;
+                } else {
+                    actionBtn.disabled = true;
+                    actionBtn.innerText = "Walk to Counter Register";
+                }
+            } else {
+                actionBtn.innerText = "No Orders Pending";

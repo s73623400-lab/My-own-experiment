@@ -24,100 +24,92 @@
             position: relative;
         }
 
-        /* 1. ANIMATED HORROR FACE CONTAINER */
+        /* 1. UNCANNY CREEPYPASTA FACE CONTAINER */
         .horror-face-container {
             position: absolute;
-            top: 12%;
-            right: 8%;
-            width: 380px;
-            height: 380px;
-            transform: rotate(12deg);
-            opacity: 0.75;
-            z-index: 1;
-            /* Subtly animates the face like it's breathing */
-            animation: floatingDistortion 4s ease-in-out infinite alternate;
-        }
-
-        @keyframes floatingDistortion {
-            0% { transform: rotate(12deg) scale(1); opacity: 0.65; }
-            100% { transform: rotate(14deg) scale(1.03); opacity: 0.85; filter: drop-shadow(0 0 15px #ef4444); }
-        }
-
-        /* Glowing Slit-Pupil Eyes */
-        .horror-eye {
-            position: absolute;
-            width: 85px;
-            height: 35px;
-            background: #1a0202;
-            border: 2px solid #b91c1c;
-            border-radius: 90% 10% 90% 10%; /* Makes eyes look unnaturally sharp and tilted */
-            box-shadow: 0 0 20px #7f1d1d;
-        }
-
-        .horror-eye::after {
-            content: '';
-            position: absolute;
             top: 15%;
-            left: 48%;
-            width: 6px;
-            height: 24px;
-            background: #ef4444;
+            right: 8%;
+            width: 320px;
+            height: 320px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 25px;
+            z-index: 1;
+            filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.15));
+            animation: slowTwitch 6s ease-in-out infinite alternate;
+        }
+
+        /* Subtle organic movement to look alive */
+        @keyframes slowTwitch {
+            0% { transform: rotate(0deg) scale(1); }
+            50% { transform: rotate(2deg) scale(0.98); }
+            100% { transform: rotate(-1deg) scale(1.02); }
+        }
+
+        /* Eye Row Container */
+        .eyes-row {
+            display: flex;
+            justify-content: space-between;
+            width: 85%;
+        }
+
+        /* High-contrast wide staring eyes */
+        .uncanny-eye {
+            width: 85px;
+            height: 55px;
+            background: #ffffff;
             border-radius: 50%;
-            box-shadow: 0 0 12px #ffffff;
+            position: relative;
+            box-shadow: inset 0 0 10px #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
-        .eye-left {
-            top: 40px;
-            left: 20px;
-            transform: scaleX(-1) rotate(25deg); /* Flips the left eye shape */
+        /* Tiny unblinking pitch-black pupils */
+        .uncanny-eye::after {
+            content: '';
+            width: 18px;
+            height: 18px;
+            background: #000000;
+            border-radius: 50%;
+            animation: lookAround 4s ease-in-out infinite alternate;
         }
 
-        .eye-right {
-            top: 25px;
-            right: 20px;
-            transform: rotate(20deg);
+        @keyframes lookAround {
+            0% { transform: translate(-3px, 1px); }
+            100% { transform: translate(3px, -1px); }
         }
 
-        /* 2. CUSTOM HAUNTED JAGGED SMILE */
-        .horror-mouth {
-            position: absolute;
-            bottom: 30px;
-            left: 40px;
+        /* 2. THE PIANO-KEY HORROR GRIN */
+        .uncanny-mouth {
             width: 280px;
-            height: 120px;
-            background: #110000;
-            border: 3px solid #b91c1c;
-            border-radius: 10% 10% 85% 85%; /* Hollow wide grin dynamic shape */
-            box-shadow: 0 10px 30px rgba(185, 28, 28, 0.5);
-            overflow: hidden; /* Clips the inner elements to form teeth */
+            height: 110px;
+            background: #000000;
+            border: 4px solid #ffffff;
+            border-radius: 10px 10px 110px 110px; /* Wide crescent drop */
+            overflow: hidden;
+            display: grid;
+            /* Creates the perfect vertical teeth rows */
+            grid-template-columns: repeat(9, 1fr); 
+            gap: 3px; 
+            padding: 2px;
+            box-shadow: 0 5px 25px rgba(255, 255, 255, 0.1);
         }
 
-        /* Top Row of Teeth */
-        .horror-mouth::before {
-            content: '';
-            position: absolute;
-            top: -2px;
-            left: 0;
+        /* Individual rectangular block tooth styling */
+        .tooth {
+            background: #ffffff;
+            height: 100%;
             width: 100%;
-            height: 30px;
-            /* Pure CSS repeating linear gradients to render sharp triangles */
-            background: repeating-linear-gradient(45deg, transparent, transparent 10px, #b91c1c 10px, #b91c1c 20px),
-                        repeating-linear-gradient(-45deg, transparent, transparent 10px, #b91c1c 10px, #b91c1c 20px);
-            background-blend-mode: multiply;
+            box-shadow: inset 0 -15px 15px rgba(0,0,0,0.2), inset 0 15px 15px rgba(0,0,0,0.2);
         }
 
-        /* Bottom Row of Teeth */
-        .horror-mouth::after {
-            content: '';
-            position: absolute;
-            bottom: -4px;
-            left: 0;
-            width: 100%;
-            height: 30px;
-            background: repeating-linear-gradient(45deg, transparent, transparent 12px, #991b1b 12px, #991b1b 24px),
-                        repeating-linear-gradient(-45deg, transparent, transparent 12px, #991b1b 12px, #991b1b 24px);
-            background-blend-mode: multiply;
-        }
+        /* Shorten edge teeth to match the mouth curve naturally */
+        .tooth:nth-child(1), .tooth:nth-child(9) { height: 60%; }
+        .tooth:nth-child(2), .tooth:nth-child(8) { height: 80%; }
 
         .menu-container {
             display: flex;
@@ -200,11 +192,23 @@
 </head>
 <body>
 
-    <!-- Redesigned Haunted Horror Face Setup -->
+    <!-- Precise Creepypasta Analogue Horror Face Block -->
     <div class="horror-face-container">
-        <div class="horror-eye eye-left"></div>
-        <div class="horror-eye eye-right"></div>
-        <div class="horror-mouth"></div>
+        <div class="eyes-row">
+            <div class="uncanny-eye"></div>
+            <div class="uncanny-eye"></div>
+        </div>
+        <div class="uncanny-mouth">
+            <div class="tooth"></div>
+            <div class="tooth"></div>
+            <div class="tooth"></div>
+            <div class="tooth"></div>
+            <div class="tooth"></div>
+            <div class="tooth"></div>
+            <div class="tooth"></div>
+            <div class="tooth"></div>
+            <div class="tooth"></div>
+        </div>
     </div>
 
     <div class="menu-container">

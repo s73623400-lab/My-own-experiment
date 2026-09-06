@@ -128,41 +128,41 @@
 
         let loopId = null;
 
-        // Player configurations starting metrics centered inside our cottage bedroom
+        // Player starting coordinates inside the master bedroom
         let player = { x: 100, y: 100, size: 14, speed: 2.8, angle: 0 };
         
-        // 🧱 BIRDS-EYE STRUCTURAL INTERIOR WALLS (x, y, width, height)
+        // 🧱 BIRDS-EYE STRUCTURAL INTERIOR WALLS
         let houseWalls = [
             // Boundary Outer Walls limits
-            { x: 20, y: 20, w: 754, h: 12 },   // Top boundary wall
-            { x: 20, y: 418, w: 754, h: 12 },  // Bottom boundary wall
-            { x: 20, y: 20, w: 12, h: 410 },   // Left boundary wall
-            { x: 762, y: 20, w: 12, h: 410 },  // Right boundary wall
+            { x: 20, y: 20, w: 754, h: 12 },   
+            { x: 20, y: 418, w: 754, h: 12 },  
+            { x: 20, y: 20, w: 12, h: 410 },   
+            { x: 762, y: 20, w: 12, h: 410 },  
             
-            // Interior Room Dividers (with cutouts left open for doors)
-            { x: 240, y: 20, w: 12, h: 150 },  // Bedroom wall top branch
-            { x: 240, y: 230, w: 12, h: 200 }, // Bedroom wall bottom branch
+            // Interior Room Dividers (with cutouts for doors)
+            { x: 240, y: 20, w: 12, h: 150 },  
+            { x: 240, y: 230, w: 12, h: 200 }, 
             
-            { x: 240, y: 230, w: 260, h: 12 }, // Central hallway horizontal wall divider
-            { x: 500, y: 230, w: 12, h: 200 }  // Bathroom/Kitchen divider vertical axis
+            { x: 240, y: 230, w: 260, h: 12 }, 
+            { x: 500, y: 230, w: 12, h: 200 }  
         ];
         
-        // 🪑 HOUSE FURNITURE LAYOUT BLOCKS MAP INDEX
+        // 🪑 HOUSE FURNITURE LAYOUT BLOCKS
         let houseFurniture = [
-            // Bedroom Objects (Top-Left)
+            // Bedroom (Top-Left)
             { x: 45, y: 45, w: 80, h: 65, color: '#3f3f46', label: 'Couch Bed' },
             { x: 190, y: 45, w: 40, h: 40, color: '#4c1d95', label: 'Static Television Anomaly' },
             
-            // Living Room Objects (Bottom-Left / Center corridor)
+            // Living Room (Bottom-Left)
             { x: 50, y: 320, w: 140, h: 50, color: '#7f1d1d', label: 'Long Leather Sofa' },
             { x: 100, y: 265, w: 40, h: 40, color: '#78350f', label: 'Coffee Table' },
             
-            // Kitchen Objects (Top-Right Area)
-            { x: 380, y: 45, w: 160, h: 35, color: '#1e293b', label: 'Kitchen Marble Counter Countertop' },
+            // Kitchen (Top-Right Area)
+            { x: 380, y: 45, w: 160, h: 35, color: '#1e293b', label: 'Kitchen Marble Counter' },
             { x: 670, y: 45, w: 60, h: 60, color: '#475569', label: 'Industrial Refrigerator Unit' },
             { x: 420, y: 130, w: 80, h: 60, color: '#b45309', label: 'Wooden Dining Table' },
             
-            // Bathroom Objects (Bottom-Right Area)
+            // Bathroom (Bottom-Right Area)
             { x: 700, y: 350, w: 50, h: 55, color: '#e2e8f0', label: 'Porcelain Bath Station' },
             { x: 530, y: 375, w: 40, h: 35, color: '#cbd5e1', label: 'Utility Sink Base' }
         ];
@@ -175,13 +175,13 @@
             document.getElementById('dialogueText').innerText = text;
         }
 
-        // AUTO-START UP INITIALIZER ROUTINE
+        // AUTO-START INITIALIZER ROUTINE
         window.onload = function() {
             window.addEventListener('keydown', handleKeyDown);
             window.addEventListener('keyup', handleKeyUp);
             canvas.addEventListener('mousemove', handleMouseMove);
 
-            setConsoleLog("HOUSE ENTRIES", "WASD keys move your character blueprint across the rooms grid. Sweep your MOUSE to focus the vision beam.");
+            setConsoleLog("HOUSE ENTRIES", "WASD keys move your character cross the rooms. Sweep your MOUSE to focus your light beam.");
             
             if (loopId) cancelAnimationFrame(loopId);
             loopId = requestAnimationFrame(houseEngineFrameCycle);
@@ -216,7 +216,6 @@
             if (keys.a) nextX -= player.speed;
             if (keys.d) nextX += player.speed;
 
-            // Check walls first, then verify furniture obstacle metrics bounds
             if (!evaluateWallCollisions(nextX, player.y) && !evaluateFurnitureCollisions(nextX, player.y)) {
                 player.x = nextX;
             }
@@ -243,7 +242,7 @@
                     y + player.size > obj.y && y - player.size < obj.y + obj.h) {
                     
                     if (obj.label.includes('Anomaly')) {
-                        setConsoleLog("⚠️ MONTIOR SCREEN", "The television screen buzzes with static sound ripples... something is near.");
+                        setConsoleLog("⚠️ MONITOR SCREEN", "The television screen buzzes with static sound ripples... something is near.");
                         document.getElementById('hud-threat').innerText = "ALERT DETECTED";
                         document.getElementById('hud-threat').style.color = "#ef4444";
                     } else {
@@ -256,11 +255,21 @@
         }
 
         function renderHouseGraphicsLayers() {
-            // 1. Core floor plane background backdrop
+            // 1. Core black background
             ctx.fillStyle = '#060608';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            // 2. Tile grid map coordinate gridlines
+            // 2. Tile grid map coordinate lines
             ctx.strokeStyle = '#0f0f12';
             ctx.lineWidth = 1;
             for(let i=0; i<canvas.width; i+=40) {
+                ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, canvas.height); ctx.stroke();
+            }
+            for(let j=0; j<canvas.height; j+=40) {
+                ctx.beginPath(); ctx.moveTo(0, j); ctx.lineTo(canvas.width, j); ctx.stroke();
+            }
+
+            // 3. Render Furniture Assets blocks
+            for (let obj of houseFurniture) {
+                ctx.fillStyle = obj.color;
+                ctx.fillRect(obj.x, obj.y, obj.w, obj.h);

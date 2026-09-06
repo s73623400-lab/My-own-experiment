@@ -95,19 +95,19 @@
         /* INTERACTION PROMPT INTERFACE Overlay */
         #interactionScreen {
             position: absolute;
-            top: 45px;
+            top: 0;
             left: 0;
             width: 100%;
             height: 450px;
-            background: rgba(0, 0, 0, 0.9);
+            background: rgba(0, 0, 0, 0.93);
             z-index: 100;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            gap: 20px;
+            gap: 15px;
             text-align: center;
-            padding: 40px;
+            padding: 30px;
         }
 
         .menu-title {
@@ -115,6 +115,7 @@
             font-weight: 900;
             letter-spacing: 4px;
             text-shadow: 0 0 15px #b91c1c;
+            color: #b91c1c;
         }
 
         .menu-btn {
@@ -128,6 +129,7 @@
             text-transform: uppercase;
             border-radius: 4px;
             transition: all 0.2s;
+            z-index: 110;
         }
 
         .menu-btn:hover {
@@ -139,44 +141,60 @@
 
         .instructions {
             color: #888;
-            font-size: 0.9rem;
-            line-height: 1.5;
-            max-width: 500px;
+            font-size: 0.85rem;
+            line-height: 1.4;
+            max-width: 550px;
+        }
+
+        /* ✨ NEW DYNAMIC COFFEE ALIAS BANNER */
+        .cafe-signin-banner {
+            color: #ff9f0a;
+            font-size: 1.1rem;
+            font-weight: bold;
+            letter-spacing: 1px;
+            margin: 5px 0;
+            text-shadow: 0 0 8px rgba(255, 159, 10, 0.3);
+            text-transform: uppercase;
         }
     </style>
 </head>
 <body>
 
-    <!-- COMPLETE CONTAINED EMULATED CHAT GAME CORE BOARD -->
     <div id="gameContainer">
         
         <!-- DATA TRACKER BAR -->
         <div class="hud-banner">
-            <div class="hud-item">BARISTA: <span class="hud-value">ZACK [STAFF]</span></div>
+            <div class="hud-item">BARISTA: <span id="hud-barista-name" class="hud-value">STAFF</span></div>
             <div class="hud-item">POWER GENERATOR: <span id="hud-power" class="hud-value" style="color: #22c55e;">100%</span></div>
             <div class="hud-item">THREAT INDEX: <span id="hud-threat" class="hud-value" style="color: #ff9f0a;">NONE</span></div>
         </div>
 
-        <!-- PLAYABLE WORLD INTERACTION VIEWPORT CHASSIS -->
+        <!-- PLAYABLE WORLD VIEWPORT -->
         <div class="viewport-wrapper">
             
             <!-- OVERLAY MENU MODULE SYSTEM -->
             <div id="interactionScreen">
                 <h1 id="screenTitle" class="menu-title">THE HOLLOW CAFE</h1>
                 <p id="screenDesc" style="color: #9ca3af;">Something crept inside through the maintenance ventilation hatches tonight.</p>
-                <button id="screenActionBtn" class="menu-btn" onclick="startChatShift()">Boot Shift Routine</button>
+                
                 <div class="instructions">
                     <strong>CONTROLS:</strong> WASD Keys to navigate across the floor plane grid.<br>
                     Aim your physical mouse pointer to point your 🔦 flashlight beam.<br>
                     <strong>OBJECTIVE:</strong> Repair the flickering generators before your light runs dry. Avoid the red crawling anomalies stalking you in the darkness.
                 </div>
+
+                <!-- ✨ DYNAMIC INJECTED SIGN IN DETAILS BLOCK (Placed under objective, above instructions) -->
+                <div id="cafeSigninText" class="cafe-signin-banner">YOU SIGN IN TO: Loading System Credentials...</div>
+
+                <!-- Verified fully clickable interactive button framework link -->
+                <button id="screenActionBtn" class="menu-btn" onclick="startChatShift()">Boot Shift Routine</button>
             </div>
 
-            <!-- CORE RENDERING GRAPHICS WINDOW -->
+            <!-- RENDERING CANVAS BOX SCREEN -->
             <canvas id="gameCanvas" width="794" height="450"></canvas>
         </div>
 
-        <!-- DIALOGUE CONSOLE SUB-SHEET SYSTEM -->
+        <!-- DIALOGUE SYSTEM BOX -->
         <div class="dialogue-box">
             <div id="dialogueSpeaker" class="dialogue-speaker">LOG INTERFACE</div>
             <div id="dialogueText" class="dialogue-text">System initializes. Press "Boot Shift Routine" to connect your controller anchors directly into the cafe deck grids.</div>
@@ -187,13 +205,13 @@
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
 
-        // GAME STATES CORE TRACKERS
+        const SAVE_PREFIX = 'hollow_cafe_slot_';
+        let currentProfile = null;
         let gameRunning = false;
         let powerLevel = 100;
-        let threatLevel = "NONE";
         let loopId = null;
 
-        // Player configuration specs
+        // Player configurations
         let player = {
             x: 100,
             y: 225,
@@ -202,13 +220,13 @@
             angle: 0
         };
 
-        // Tracking anomalous threat entities array metrics
+        // Threat objects matrix
         let anomalies = [
             { x: 500, y: 80, size: 10, speedX: 1.2, speedY: 0.8, color: '#ff0000' },
             { x: 650, y: 350, size: 14, speedX: -1.0, speedY: -1.4, color: '#ff0000' }
         ];
 
-        // Static object collision layouts mapped directly into coordinate spaces
+        // Level collision grid bounds
         let mapObjects = [
             { x: 340, y: 100, w: 40, h: 250, color: '#27272a', label: 'Serving Counter' },
             { x: 700, y: 40, w: 45, h: 45, color: '#eab308', label: 'Power Generator Engine', repaired: false },
@@ -218,12 +236,35 @@
         let keys = { w: false, a: false, s: false, d: false };
         let mouse = { x: 0, y: 0 };
 
+        // Pull active parameters dynamically on load cycles
+        window.onload = function() {
+            fetchActiveRegistryData();
+        };
+
+        function fetchActiveRegistryData() {
+            // Target slots mapping configurations from local storage profile registers
+            const urlParams = new URLSearchParams(window.location.search);
+            let slotId = urlParams.get('slot') || localStorage.getItem('hollow_cafe_current_configuring_slot') || '1';
+            const rawData = localStorage.getItem(SAVE_PREFIX + slotId);
+
+            if (rawData) {
+                currentProfile = JSON.parse(rawData);
+                // Sync labels directly to user entries parameters
+                document.getElementById('hud-barista-name').innerText = `${currentProfile.name.toUpperCase()} [STAFF]`;
+                document.getElementById('cafeSigninText').innerText = `YOU SIGN IN TO: ${currentProfile.alias.toUpperCase()}`;
+            } else {
+                // Fallback default mockup strings if running outside github connection architecture pools
+                document.getElementById('hud-barista-name').innerText = "ZACK [STAFF]";
+                document.getElementById('cafeSigninText').innerText = "YOU SIGN IN TO: ESPRESSO KING";
+            }
+        }
+
         function setConsoleLog(speaker, msg) {
             document.getElementById('dialogueSpeaker').innerText = speaker.toUpperCase();
             document.getElementById('dialogueText').innerText = msg;
         }
 
-        // ENTRY NAVIGATION CORE MANAGER ROUTINE
+        // TRIGGER METHOD FIRING ON CLICK TO START ENGINE 
         function startChatShift() {
             document.getElementById('interactionScreen').style.display = 'none';
             gameRunning = true;
@@ -234,62 +275,8 @@
             mapObjects[2].repaired = false; mapObjects[2].color = '#eab308';
             player.x = 100; player.y = 225;
 
-            initControlHooks();
-            setConsoleLog("SHIFT LOG", "Fuses blown. Main grids disconnected. Traverse the counter path to access the breaker targets in the eastern zone.");
-            
-            if (loopId) cancelAnimationFrame(loopId);
-            loopId = requestAnimationFrame(mainEngineCycle);
-        }
-
-        function initControlHooks() {
+            // Wire input systems hooks directly to event listeners arrays
             window.addEventListener('keydown', handleKeyDown);
             window.addEventListener('keyup', handleKeyUp);
             canvas.addEventListener('mousemove', handleMouseMove);
-        }
-
-        function handleKeyDown(e) {
-            if (!gameRunning) return;
-            let key = e.key.toLowerCase();
-            if (key in keys) {
-                keys[key] = true;
-                e.preventDefault(); // Lock browser scrolling mechanics
-            }
-        }
-
-        function handleKeyUp(e) {
-            let key = e.key.toLowerCase();
-            if (key in keys) keys[key] = false;
-        }
-
-        function handleMouseMove(e) {
-            const rect = canvas.getBoundingClientRect();
-            mouse.x = e.clientX - rect.left;
-            mouse.y = e.clientY - rect.top;
-        }
-
-        // ENGINE RUNTIME CONTROL LOOPS LOOP WHEEL
-        function mainEngineCycle() {
-            if (!gameRunning) return;
-
-            updatePhysicsEngine();
-            renderFrameLayer();
-            evaluateWinLossStates();
-
-            loopId = requestAnimationFrame(mainEngineCycle);
-        }
-
-        function updatePhysicsEngine() {
-            let nextX = player.x;
-            let nextY = player.y;
-
-            if (keys.w) nextY -= player.speed;
-            if (keys.s) nextY += player.speed;
-            if (keys.a) nextX -= player.speed;
-            if (keys.d) nextX += player.speed;
-
-            // Enforce hard wall limits container boundary allocations
-            if (nextX > player.size && nextX < canvas.width - player.size) {
-                if (!checkObstructionMatrices(nextX, player.y)) player.x = nextX;
-            }
-            if (nextY > player.size && nextY < canvas.height - player.size) {
 

@@ -41,7 +41,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            z-index: 10;
+            z-index: 100;
         }
 
         .hud-item {
@@ -55,7 +55,7 @@
             text-shadow: 0 0 8px rgba(255, 255, 255, 0.5);
         }
 
-        /* CORE VIEWPORT wrapper */
+        /* CORE VIEWPORT WRAPPER */
         .viewport-wrapper {
             position: relative;
             width: 794px;
@@ -70,10 +70,11 @@
             position: absolute;
             top: 0;
             left: 0;
-            z-index: 5; /* Pushes canvas down underneath interface panels */
+            z-index: 10;
+            pointer-events: none; /* ⚡ IGNORES INTERACTION DETECTIONS DURING OVERLAYS */
         }
 
-        /* 💵 DAY SHIFT MANAGEMENT DASHBOARD OVERLAY */
+        /* 💵 DAY SHIFT DASHBOARD OVERLAY */
         #dayShiftUI {
             position: absolute;
             top: 0;
@@ -81,13 +82,14 @@
             width: 100%;
             height: 100%;
             background-color: #141517;
-            z-index: 20; /* Layers directly above background frames */
+            z-index: 50; 
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             gap: 20px;
             color: #f3f4f6;
+            pointer-events: auto;
         }
 
         .register-box {
@@ -120,7 +122,7 @@
             transform: scale(1.02);
         }
 
-        /* 🚨 FIX: FORCE POP-UP LAYER TO THE ABSOLUTE TOP OF THE DECK */
+        /* 🚨 UNBREAKABLE SCREEN POP-UP CARD LAYER */
         #interactionScreen {
             position: absolute;
             top: 0;
@@ -128,7 +130,7 @@
             width: 100%;
             height: 100%;
             background: rgba(0, 0, 0, 0.95);
-            z-index: 9999 !important; /* Forces screen pop-up cleanly over all background blockers */
+            z-index: 999999 !important; /* Forces it over all invisible walls */
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -136,6 +138,7 @@
             gap: 15px;
             text-align: center;
             padding: 30px;
+            pointer-events: auto !important; /* Grants full clickable processing rights */
         }
 
         .menu-title {
@@ -145,28 +148,30 @@
             text-shadow: 0 0 15px #b91c1c;
         }
 
+        /* 🎯 ROCK-SOLID INTERACTIVE BUTTON SCHEMES */
         .menu-btn {
-            background: #1a0202;
-            border: 2px solid #b91c1c;
-            color: #b91c1c;
-            padding: 12px 30px;
-            font-size: 1.1rem;
-            font-weight: bold;
-            cursor: pointer;
+            background: #1a0202 !important;
+            border: 2px solid #b91c1c !important;
+            color: #b91c1c !important;
+            padding: 14px 40px !important;
+            font-size: 1.2rem !important;
+            font-weight: bold !important;
+            cursor: pointer !important;
             text-transform: uppercase;
             border-radius: 4px;
             transition: all 0.2s;
             position: relative;
-            z-index: 10000 !important; /* Grants full standalone processing rights to mouse hits */
+            z-index: 1000000 !important; /* Maximizes layers stack index completely */
+            pointer-events: auto !important; /* Guarantees mouse hits will register */
         }
 
         .menu-btn:hover {
-            background: #b91c1c;
-            color: #000;
-            box-shadow: 0 0 20px #b91c1c;
+            background: #b91c1c !important;
+            color: #000000 !important;
+            box-shadow: 0 0 25px #b91c1c;
         }
 
-        /* DIALOGUE OUTPUT CONSOLE */
+        /* CONSOLE FEEDBACK BOX */
         .dialogue-box {
             height: 110px;
             background-color: #0a0000;
@@ -175,7 +180,7 @@
             display: flex;
             flex-direction: column;
             gap: 5px;
-            z-index: 10;
+            z-index: 100;
         }
 
         .dialogue-speaker {
@@ -205,7 +210,7 @@
 
         <div class="viewport-wrapper">
             
-            <!-- 🚨 INTERACTIVE TRANSITION MODAL (Now perfectly selectable) -->
+            <!-- 🚨 INTERACTIVE TRANSITION MODAL (Completely unblocked) -->
             <div id="interactionScreen">
                 <h1 id="screenTitle" class="menu-title">THE HOLLOW CAFE</h1>
                 <p id="screenDesc" style="color: #9ca3af; max-width: 600px;">Welcome to your first morning shift assignment.</p>
@@ -285,7 +290,3 @@
                 gameHour = 8;
                 isPm = false;
                 updateHudDisplays();
-                queueNextDayCustomer();
-                setConsoleLog("SHIFT UPDATE", "Front lobby unlocked. Patrons arriving. Click the order processing button to manage customer lines.");
-            } 
-            else if (currentGameState === "MIDNIGHT_ALERT_PENDING") {

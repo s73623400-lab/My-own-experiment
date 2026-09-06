@@ -21,7 +21,6 @@
             justify-content: flex-start;
             padding-left: 10%;
             overflow: hidden;
-            /* Optional: Add a background image for your game here */
             background-image: linear-gradient(to right, rgba(15, 23, 42, 0.95), rgba(15, 23, 42, 0.6)), url('your-background-image.jpg');
             background-size: cover;
             background-position: center;
@@ -45,10 +44,16 @@
             margin-bottom: 1rem;
         }
 
-        .menu-options {
+        .menu-screen {
             display: flex;
             flex-direction: column;
             gap: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        /* Class used to hide screens dynamically */
+        .hidden {
+            display: none !important;
         }
 
         .menu-btn {
@@ -63,6 +68,9 @@
             cursor: pointer;
             transition: all 0.3s ease;
             width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
         .menu-btn:hover:not(:disabled) {
@@ -73,18 +81,28 @@
             box-shadow: 0 0 20px rgba(56, 189, 248, 0.4);
         }
 
-        /* Styling for when Continue is disabled (no save file found) */
         .menu-btn:disabled {
             opacity: 0.3;
             cursor: not-allowed;
             border-color: #1e293b;
         }
 
-        .tooltip {
+        .slot-status {
             font-size: 0.85rem;
-            color: #94a3b8;
-            margin-top: -0.5rem;
-            padding-left: 0.5rem;
+            font-weight: 400;
+            opacity: 0.8;
+        }
+
+        .back-btn {
+            border-color: #f43f5e;
+            color: #f43f5e;
+            background: rgba(244, 63, 94, 0.05);
+        }
+
+        .back-btn:hover {
+            background: #f43f5e !important;
+            color: #ffffff !important;
+            border-color: #f43f5e !important;
         }
     </style>
 </head>
@@ -93,64 +111,133 @@
     <div class="menu-container">
         <h1 class="game-title">My Game</h1>
         
-        <div class="menu-options">
-            <!-- New Game Button -->
-            <button id="newGameBtn" class="menu-btn">New Game</button>
+        <!-- Main Home Screen Menu -->
+        <div id="mainScreen" class="menu-screen">
+            <button id="mainNewGameBtn" class="menu-btn">New Game</button>
+            <button id="mainContinueBtn" class="menu-btn">Continue</button>
+        </div>
+
+        <!-- Slot Selection Screen (Shared by both actions) -->
+        <div id="slotScreen" class="menu-screen hidden">
+            <h2 id="slotScreenTitle" style="font-size: 1.5rem; margin-bottom: 0.5rem; color: #94a3b8;">Select a Profile</h2>
             
-            <!-- Continue Button -->
-            <button id="continueBtn" class="menu-btn">Continue</button>
-            <div id="continueHint" class="tooltip"></div>
+            <button class="menu-btn slot-btn" data-slot="1">New Game <span class="slot-status"></span></button>
+            <button class="menu-btn slot-btn" data-slot="2">New Game <span class="slot-status"></span></button>
+            <button class="menu-btn slot-btn" data-slot="3">New Game <span class="slot-status"></span></button>
+            <button class="menu-btn slot-btn" data-slot="4">New Game <span class="slot-status"></span></button>
+            <button class="menu-btn slot-btn" data-slot="5">New Game <span class="slot-status"></span></button>
+            
+            <button id="backBtn" class="menu-btn back-btn">← Back</button>
         </div>
     </div>
 
     <script>
-        // Key used to look up save data in the browser's storage
-        const SAVE_KEY = 'my_game_save_data';
+        const SAVE_PREFIX = 'my_game_slot_';
+        let currentMode = ''; // Track whether user clicked 'new' or 'continue'
 
         document.addEventListener('DOMContentLoaded', () => {
-            const newGameBtn = document.getElementById('newGameBtn');
-            const continueBtn = document.getElementById('continueBtn');
-            const continueHint = document.getElementById('continueHint');
+            const mainScreen = document.getElementById('mainScreen');
+            const slotScreen = document.getElementById('slotScreen');
+            const slotScreenTitle = document.getElementById('slotScreenTitle');
+            
+            const mainNewGameBtn = document.getElementById('mainNewGameBtn');
+            const mainContinueBtn = document.getElementById('mainContinueBtn');
+            const backBtn = document.getElementById('backBtn');
+            const slotButtons = document.querySelectorAll('.slot-btn');
 
-            // Check if save file exists
-            const savedProgress = localStorage.getItem(SAVE_KEY);
-
-            if (savedProgress) {
-                // Save file exists: Enable Continue
-                continueBtn.disabled = false;
-                continueHint.textContent = "Resume your last adventure.";
-            } else {
-                // No save file: Disable Continue
-                continueBtn.disabled = true;
-                continueHint.textContent = "No save data found.";
+            // 1. Initial configuration check for Main Screen
+            function refreshMainMenu() {
+                let hasAnySave = false;
+                for (let i = 1; i <= 5; i++) {
+                    if (localStorage.getItem(SAVE_PREFIX + i)) {
+                        hasAnySave = true;
+                        break;
+                    }
+                }
+                // Disable continue altogether if absolutely no files exist across all 5 profiles
+                mainContinueBtn.disabled = !hasAnySave;
             }
 
-            // Handle New Game click
-            newGameBtn.addEventListener('click', () => {
-                if (savedProgress) {
-                    const confirmOverwrite = confirm("Starting a new game will overwrite your existing save file. Do you want to proceed?");
-                    if (!confirmOverwrite) return;
-                }
-                
-                // Initialize default game state data
-                const initialSaveData = {
-                    level: 1,
-                    score: 0,
-                    dateCreated: new Date().toISOString()
-                };
-                
-                // Store initial data and redirect
-                localStorage.setItem(SAVE_KEY, JSON.stringify(initialSaveData));
-                alert("Starting a brand new game!");
-                // window.location.href = 'game.html'; // Uncomment to link to your gameplay page
+            // 2. Set labels and states on individual slot selection buttons
+            function setupSlotButtons(mode) {
+                currentMode = mode;
+                slotScreenTitle.textContent = mode === 'new' ? 'Choose a slot to create:' : 'Choose a profile to load:';
+
+                slotButtons.forEach(btn => {
+                    const slotId = btn.getAttribute('data-slot');
+                    const savedData = localStorage.getItem(SAVE_PREFIX + slotId);
+
+                    if (savedData) {
+                        const data = JSON.parse(savedData);
+                        btn.innerHTML = `Profile ${slotId} <span class="slot-status">Level ${data.level} (Active)</span>`;
+                        btn.disabled = false; // Always selectable to overwrite in 'new' mode or load in 'continue' mode
+                    } else {
+                        btn.innerHTML = `New Game <span class="slot-status">Empty Slot</span>`;
+                        // Disable this specific button only if we are attempting to load/continue progress
+                        btn.disabled = (mode === 'continue');
+                    }
+                });
+            }
+
+            // Navigation toggles
+            mainNewGameBtn.addEventListener('click', () => {
+                mainScreen.classList.add('hidden');
+                slotScreen.classList.remove('hidden');
+                setupSlotButtons('new');
             });
 
-            // Handle Continue click
-            continueBtn.addEventListener('click', () => {
-                const data = JSON.parse(localStorage.getItem(SAVE_KEY));
-                alert(`Loading your progress! Level: ${data.level}, Score: ${data.score}`);
-                // window.location.href = 'game.html'; // Uncomment to link to your gameplay page
+            mainContinueBtn.addEventListener('click', () => {
+                mainScreen.classList.add('hidden');
+                slotScreen.classList.remove('hidden');
+                setupSlotButtons('continue');
             });
+
+            backBtn.addEventListener('click', () => {
+                slotScreen.classList.add('hidden');
+                mainScreen.classList.remove('hidden');
+                refreshMainMenu();
+            });
+
+            // Handle individual profile slot clicks
+            slotButtons.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const slotId = btn.getAttribute('data-slot');
+                    const slotKey = SAVE_PREFIX + slotId;
+                    const existingSave = localStorage.getItem(slotKey);
+
+                    if (currentMode === 'new') {
+                        if (existingSave) {
+                            const overwrite = confirm(`Profile ${slotId} already has data. Overwrite and start a brand new game?`);
+                            if (!overwrite) return;
+                        }
+
+                        // Create brand new file configuration
+                        const newGameData = {
+                            level: 1,
+                            score: 0,
+                            timestamp: new Date().toLocaleDateString()
+                        };
+                        localStorage.setItem(slotKey, JSON.stringify(newGameData));
+                        alert(`Creating Game Profile ${slotId}! Starting at Level 1...`);
+                        // window.location.href = 'game.html?slot=' + slotId;
+
+                    } else if (currentMode === 'continue') {
+                        if (existingSave) {
+                            const data = JSON.parse(existingSave);
+                            alert(`Loading Profile ${slotId}! (Level: ${data.level})`);
+                            // window.location.href = 'game.html?slot=' + slotId;
+                        }
+                    }
+                    
+                    // Return back to core dashboard after selection process completes
+                    slotScreen.classList.add('hidden');
+                    mainScreen.classList.remove('hidden');
+                    refreshMainMenu();
+                });
+            });
+
+            // Run application initializer checks on system boots
+            refreshMainMenu();
         });
     </script>
 </body>

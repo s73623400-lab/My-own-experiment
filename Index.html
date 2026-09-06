@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<title>Coffee Shop</title>
+
+<meta charset="UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<h1>Welcome to the Coffee Shop</h1>
+
+  <h1 style="text-align: center; cursor: pointer;" onclick="this.style.display = 'none';">
+        Welcome to the Coffee Shop
+    </h1>
+
+  <h1>Start Shift</h1>
+  <button> Click to begin!</button>
+
+  <div id="start-menu">
+        <h1>Start Shift</h1>
+       
+        <button onclick="document.getElementById('start-menu').style.display = 'none'; document.getElementById('outside-scene').style.display = 'block';">
+            Click to begin!
+        </button>
+    </div>
+
+   <div id="outside-scene" style="display: none;">
+        <h2>🏡 Outside the Coffee Shop</h2>
+        <p>The morning sun is shining on your small, cosy cafe. It is time to open up!</p>
+        <button>Walk Inside 🚪</button>
+    </div>
+
+  <p style="opacity: 1; transition: opacity 1s;" onclick="this.style.opacity = '0';">
+    Hill View Court
+</p>
+
+  

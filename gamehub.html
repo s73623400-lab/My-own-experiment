@@ -3,224 +3,292 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Barista Employment Registry</title>
+    <title>The Hollow Cafe - System Floor</title>
     <style>
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
+            font-family: 'Courier New', Courier, monospace;
         }
 
-        html, body {
-            height: 100% !important;
-            width: 100% !important;
-            background-color: #1a1d24 !important;
+        body {
+            background-color: #050505;
+            color: #b91c1c;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
         }
 
-        h2 {
-            margin-top: 0;
-            color: #ff9f0a;
-            font-size: 22px;
-            border-bottom: 2px solid #374151;
-            padding-bottom: 10px;
-            text-transform: uppercase;
+        #gameContainer {
+            width: 800px;
+            background: #000;
+            border: 3px solid #450a0a;
+            box-shadow: 0 0 40px rgba(185, 28, 28, 0.3);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        /* HUD PANEL */
+        .hud-banner {
+            background-color: #110000;
+            border-bottom: 2px solid #450a0a;
+            padding: 12px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .hud-item {
+            font-size: 1rem;
+            font-weight: bold;
             letter-spacing: 1px;
         }
 
-        .form-group {
-            margin-bottom: 20px;
+        .hud-value {
+            color: #ffffff;
+            text-shadow: 0 0 8px rgba(255, 255, 255, 0.5);
+        }
+
+        /* CORE VIEWPORT */
+        .viewport-wrapper {
+            position: relative;
+            width: 794px;
+            height: 450px;
+            overflow: hidden;
+            background-color: #08080a;
+        }
+
+        #gameCanvas {
+            display: block;
+            cursor: crosshair;
+        }
+
+        /* 💵 DAY SHIFT MANAGEMENT DASHBOARD OVERLAY */
+        #dayShiftUI {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #141517;
+            z-index: 20;
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            color: #f3f4f6;
         }
 
-        label {
-            font-size: 13px;
-            color: #9ca3af;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+        .register-box {
+            background-color: #1f232b;
+            border: 2px solid #374151;
+            padding: 30px;
+            border-radius: 8px;
+            width: 80%;
+            max-width: 500px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
         }
 
-        input[type="text"] {
-            background-color: #12141c;
-            border: 1px solid #4b5563;
-            border-radius: 6px;
-            padding: 12px;
-            color: #ffffff;
-            font-size: 15px;
-            outline: none;
-            transition: border-color 0.2s;
-            width: 100%;
-        }
-
-        input[type="text"]:focus {
-            border-color: #2563eb;
-        }
-
-        .faded-hint-text {
-            font-size: 13px;
-            color: rgba(156, 163, 175, 0.35);
-            font-style: italic;
-            margin-top: 2px;
-        }
-
-        .btn-submit {
-            width: 100%;
+        .register-btn {
             background-color: #2563eb;
             color: white;
             border: none;
-            padding: 14px;
-            font-size: 16px;
+            padding: 14px 28px;
+            font-size: 1.1rem;
             font-weight: bold;
-            border-radius: 8px;
+            border-radius: 6px;
             cursor: pointer;
-            transition: background-color 0.2s;
-            margin-top: 10px;
-        }
-
-        .btn-submit:hover {
-            background-color: #1d4ed8;
-        }
-
-        .btn-continue {
-            width: 100%;
-            background-color: rgba(255, 159, 10, 0.15); 
-            color: rgba(243, 244, 246, 0.25);          
-            border: 1px dashed rgba(255, 159, 10, 0.3);
-            padding: 14px;
-            font-size: 16px;
-            font-weight: bold;
-            border-radius: 8px;
+            transition: all 0.2s;
             margin-top: 15px;
+            text-transform: uppercase;
+        }
+
+        .register-btn:hover {
+            background-color: #1d4ed8;
+            transform: scale(1.02);
+        }
+
+        /* 🚨 STATE MESSAGE MODAL OVERLAY */
+        #interactionScreen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
             text-align: center;
-            cursor: not-allowed;
-            pointer-events: none; 
-            transition: all 0.3s ease-in-out;
+            padding: 30px;
         }
 
-        .btn-continue.unlocked {
-            background-color: #ff9f0a !important;
-            color: #000000 !important;
-            border: none !important;
-            cursor: pointer !important;
-            pointer-events: auto !important; 
-            box-shadow: 0 4px 14px rgba(255, 159, 10, 0.4);
+        .menu-title {
+            font-size: 2.3rem;
+            font-weight: 900;
+            letter-spacing: 3px;
+            text-shadow: 0 0 15px #b91c1c;
         }
 
-        .btn-continue.unlocked:hover {
-            background-color: #e08b04 !important;
-            transform: scale(1.01);
+        .menu-btn {
+            background: #1a0202;
+            border: 2px solid #b91c1c;
+            color: #b91c1c;
+            padding: 12px 30px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            text-transform: uppercase;
+            border-radius: 4px;
+            transition: all 0.2s;
         }
 
-        #badge-output {
-            margin-top: 25px;
-            background-color: #12141c;
-            border: 1px dashed #ff9f0a;
-            border-radius: 8px;
-            padding: 15px;
-            display: none;
+        .menu-btn:hover {
+            background: #b91c1c;
+            color: #000;
+            box-shadow: 0 0 20px #b91c1c;
+        }
+
+        /* DIALOGUE OUTPUT CONSOLE */
+        .dialogue-box {
+            height: 110px;
+            background-color: #0a0000;
+            border-top: 2px solid #450a0a;
+            padding: 15px 25px;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .dialogue-speaker {
+            font-size: 0.9rem;
+            color: #ff9f0a;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .dialogue-text {
+            font-size: 1rem;
+            color: #f3f4f6;
+            line-height: 1.3;
         }
     </style>
 </head>
-<body style="display: flex !important; justify-content: center !important; align-items: center !important; min-height: 100vh !important; width: 100vw !important;">
+<body>
 
-    <div class="registry-card" style="width: 90% !important; max-width: 480px !important; background-color: #232731 !important; border: 2px solid #374151 !important; border-radius: 12px !important; padding: 30px !important; box-shadow: 0 10px 30px rgba(0,0,0,0.5) !important; color: #f3f4f6 !important; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important; user-select: none !important;">
-        <h2>Shift Registry File</h2>
+    <div id="gameContainer">
         
-        <div class="form-group">
-            <label for="username">Staff Name:</label>
-            <input type="text" id="username" placeholder="E.g. Zack" autocomplete="off">
+        <!-- DATA HUD BAR -->
+        <div class="hud-banner">
+            <div class="hud-item">CALENDAR: <span id="hud-day" class="hud-value">DAY 1</span></div>
+            <div class="hud-item">CLOCK METRIC: <span id="hud-time" class="hud-value">08:00 AM</span></div>
+            <div class="hud-item">SHIFT INCOME: <span id="hud-money" class="hud-value" style="color: #22c55e;">$0.00</span></div>
         </div>
 
-        <div class="form-group">
-            <label for="birthplace">Place of Birth:</label>
-            <input type="text" id="birthplace" placeholder="E.g. London" autocomplete="off">
+        <div class="viewport-wrapper">
+            
+            <!-- 🚨 INTERACTIVE TRANSITION MODAL -->
+            <div id="interactionScreen">
+                <h1 id="screenTitle" class="menu-title">THE HOLLOW CAFE</h1>
+                <p id="screenDesc" style="color: #9ca3af; max-width: 600px;">Welcome to your first morning shift assignment.</p>
+                <button id="screenActionBtn" class="menu-btn" onclick="advanceWorkflowState()">Clock In</button>
+            </div>
+
+            <!-- 💵 DAYTIME SHIFT CASH REGISTER UI INTERFACE -->
+            <div id="dayShiftUI">
+                <div class="register-box">
+                    <h2 style="color: #ff9f0a; margin-bottom: 10px; font-size: 1.4rem;">POS TERMINAL</h2>
+                    <p id="orderDeskText" style="margin-bottom: 15px; min-height: 40px; font-style: italic;">Waiting for patrons...</p>
+                    <button id="orderProcessBtn" class="register-btn" onclick="processRegisterOrder()">Process Register Order</button>
+                </div>
+            </div>
+
+            <!-- 🔦 NIGHTTIME 2D CANVAS MATRIX VIEWPORT -->
+            <canvas id="gameCanvas" width="794" height="450"></canvas>
         </div>
 
-        <div class="form-group">
-            <label>Registry Time Metric:</label>
-            <div id="dynamic-date" class="faded-hint-text">System calculating DOB placeholder...</div>
-        </div>
-
-        <div class="form-group">
-            <label for="coffeename">Coffee Name Alias:</label>
-            <input type="text" id="coffeename" placeholder="E.g. Espresso King" autocomplete="off">
-        </div>
-
-        <!-- Lock Button -->
-        <button class="btn-submit" onclick="generateStaffBadge()">Lock File & Start Shift</button>
-
-        <!-- 🎯 LINKED CONTINUE TRIGGER ELEMENT -->
-        <div id="continue-link-btn" class="btn-continue" onclick="advanceToGameFloor()">
-            Continue ➔
-        </div>
-
-        <!-- Feedback Console Area -->
-        <div id="badge-output">
-            <span style="color:#ff9f0a; font-weight:bold; font-size:12px; text-transform:uppercase;">Verified Profile Locked:</span>
-            <p style="margin: 8px 0 4px 0; font-size:15px;" id="output-line-1"></p>
-            <p style="margin: 0; font-size:13px; color:#9ca3af;" id="output-line-2"></p>
+        <!-- CONSOLE FEEDBACK BOX -->
+        <div class="dialogue-box">
+            <div id="dialogueSpeaker" class="dialogue-speaker">LOG CONSOLE</div>
+            <div id="dialogueText" class="dialogue-text">System operational. Click "Clock In" to begin your regular workflow logs.</div>
         </div>
     </div>
 
     <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
         const SAVE_PREFIX = 'hollow_cafe_slot_';
+        let currentProfile = { name: "Zack", alias: "Espresso King" };
+
+        // CORE RUNTIME STATE CONTROLLERS
+        let gameDay = 1;
+        let gameHour = 8;
+        let isPm = false;
+        let gameProfit = 0;
+        let currentGameState = "START_MENU"; 
+
+        // 2D Engine Physics variables
+        let loopId = null;
+        let player = { x: 120, y: 225, size: 12, speed: 2.8, angle: 0 };
+        let anomalies = [
+            { x: 520, y: 90, size: 11, speedX: 1.4, speedY: 1.0, color: '#ff0000' },
+            { x: 620, y: 340, size: 14, speedX: -1.2, speedY: -1.6, color: '#ff0000' }
+        ];
+        let mapObjects = [
+            { x: 340, y: 100, w: 40, h: 250, color: '#27272a', label: 'Bar Counter' },
+            { x: 710, y: 200, w: 45, h: 50, color: '#eab308', label: 'Main Breaker Panel', fixed: false }
+        ];
+        let keys = { w: false, a: false, s: false, d: false };
+        let mouse = { x: 0, y: 0 };
 
         window.onload = function() {
-            generateRandomDOB();
+            let slotId = localStorage.getItem('hollow_cafe_current_configuring_slot') || '1';
+            let raw = localStorage.getItem(SAVE_PREFIX + slotId);
+            if (raw) currentProfile = JSON.parse(raw);
+            
+            document.getElementById('screenDesc').innerText = `Staff Logged: ${currentProfile.name.toUpperCase()} [Alias: ${currentProfile.alias.toUpperCase()}]. Welcome to your barista cycle logs.`;
         };
 
-        function generateRandomDOB() {
-            const startYear = 1985;
-            const endYear = 2005;
-            const randomYear = Math.floor(Math.random() * (endYear - startYear + 1)) + startYear;
-            const randomMonth = Math.floor(Math.random() * 12) + 1;
-            const randomDay = Math.floor(Math.random() * 28) + 1;
+        function setConsoleLog(speaker, text) {
+            document.getElementById('dialogueSpeaker').innerText = speaker.toUpperCase();
+            document.getElementById('dialogueText').innerText = text;
+        }
+
+        // --- NARRATIVE WORKFLOW STATE ENGINE ---
+        function advanceWorkflowState() {
+            const modal = document.getElementById('interactionScreen');
             
-            const formattedDate = `${randomDay.toString().padStart(2, '0')}/${randomMonth.toString().padStart(2, '0')}/${randomYear}`;
-            document.getElementById('dynamic-date').innerText = `DOB Auto-Generated: ${formattedDate} (Faded Verification Token)`;
-        }
-
-        function generateStaffBadge() {
-            const name = document.getElementById('username').value.trim();
-            const place = document.getElementById('birthplace').value.trim();
-            const coffeeAlias = document.getElementById('coffeename').value.trim();
-
-            if (!name || !place || !coffeeAlias) {
-                alert("🔒 Access Denied: You must complete Staff Name, Place of Birth, and Coffee Name entries before locking profiles.");
-                return;
-            }
-
-            const outputBox = document.getElementById('badge-output');
-            document.getElementById('output-line-1').innerHTML = `Welcome to the grid, <strong>${name}</strong> [Alias: <em>${coffeeAlias}</em>]`;
-            document.getElementById('output-line-2').innerHTML = `📍 Origin Verified: ${place} | Security clearance approved.`;
-            outputBox.style.display = 'block';
-
-            // Fetches the profile number chosen on your main screen menu
-            const activeSlot = localStorage.getItem('hollow_cafe_current_configuring_slot') || '1';
-            const slotKey = SAVE_PREFIX + activeSlot;
-
-            // Packs your character parameters to carry over to gamefloor.html
-            const newGameData = {
-                name: name,
-                birthplace: place,
-                alias: coffeeAlias,
-                day: 1,
-                timestamp: new Date().toLocaleDateString()
-            };
-            localStorage.setItem(slotKey, JSON.stringify(newGameData));
-
-            const continueBtn = document.getElementById('continue-link-btn');
-            continueBtn.classList.add('unlocked');
-            continueBtn.innerText = "Continue to Game Floor ➔";
-        }
-
-        // 🔗 FORWARDS USER DIRECTLY TO THE GAMEFLOOR WINDOW
-        function advanceToGameFloor() {
-            const activeSlot = localStorage.getItem('hollow_cafe_current_configuring_slot') || '1';
-            window.location.href = 'gamefloor.html?slot=' + activeSlot;
-        }
-    </script>
-</body>
-</html>
+            if (currentGameState === "START_MENU" || currentGameState === "NEXT_DAY_PENDING") {
+                currentGameState = "DAY_SHIFT";
+                modal.style.display = 'none';
+                document.getElementById('dayShiftUI').style.display = 'flex';
+                
+                gameHour = 8;
+                isPm = false;
+                updateHudDisplays();
+                queueNextDayCustomer();
+                setConsoleLog("SHIFT UPDATE", "Front lobby unlocked. Patrons arriving. Click the order processing button to manage customer lines.");
+            } 
+            else if (currentGameState === "MIDNIGHT_ALERT_PENDING") {
+                currentGameState = "HORROR_SHIFT";
+                modal.style.display = 'none';
+                document.getElementById('dayShiftUI').style.display = 'none'; // Force hide register view container
+                
+                gameHour = 1;
+                isPm = false; 
+                updateHudDisplays();
+                
+                // Wire 2D navigation tracking handlers
+                window.addEventListener('keydown', handleKeyDown);
+                window.addEventListener('keyup', handleKeyUp);

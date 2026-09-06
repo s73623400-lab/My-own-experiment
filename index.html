@@ -3,17 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Game Main Menu</title>
+    <title>The Hollow Cafe</title>
     <style>
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Courier New', Courier, monospace, 'Segoe UI', sans-serif;
         }
 
         body {
-            background: #000000; /* Switched screen background to pure horror black */
+            background: #000000;
             color: #f8fafc;
             height: 100vh;
             display: flex;
@@ -24,23 +24,17 @@
             position: relative;
         }
 
-        /* Procedural Horror Smiley Face in Top Right */
+        /* Horror Smiley Face Asset Container */
         .horror-face {
             position: absolute;
             top: 5%;
             right: 5%;
             width: 250px;
             height: 250px;
-            transform: rotate(15deg); /* Angled as requested */
+            transform: rotate(15deg);
             opacity: 0.85;
-            pointer-events: none; /* Keeps it purely visual so it doesn't block clicks */
-            filter: drop-shadow(0 0 15px rgba(239, 68, 68, 0.4)); /* Eerie crimson glow */
-        }
-
-        /* SVG internal artwork mapping closely to raw horror sketches */
-        .horror-face svg {
-            width: 100%;
-            height: 100%;
+            pointer-events: none;
+            filter: drop-shadow(0 0 15px rgba(239, 68, 68, 0.4));
         }
 
         .menu-container {
@@ -49,7 +43,7 @@
             gap: 2rem;
             max-width: 400px;
             width: 100%;
-            z-index: 10; /* Ensures buttons stay on top of any design effects */
+            z-index: 2; /* Keeps text layered above any overlapping visual assets */
         }
 
         .game-title {
@@ -57,9 +51,10 @@
             font-weight: 800;
             text-transform: uppercase;
             letter-spacing: 2px;
-            color: #ef4444; /* Changed title colors to blood crimson */
-            text-shadow: 0 4px 20px rgba(239, 68, 68, 0.5);
+            color: #ef4444;
+            text-shadow: 0 0 10px rgba(239, 68, 68, 0.6);
             margin-bottom: 1rem;
+            line-height: 1.1;
         }
 
         .menu-screen {
@@ -74,88 +69,87 @@
         }
 
         .menu-btn {
-            background: rgba(15, 23, 42, 0.8); /* Dark slate semi-transparent base */
-            border: 2px solid #1e293b;
-            color: #e2e8f0;
-            padding: 1rem 2rem;
+            background: rgba(15, 15, 15, 0.9);
+            border: 2px solid #334155;
+            color: #94a3b8;
+            padding: 1.2rem 2rem;
             font-size: 1.25rem;
             font-weight: 600;
             text-align: left;
-            border-radius: 8px;
+            border-radius: 4px;
             cursor: pointer;
             transition: all 0.3s ease;
             width: 100%;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            letter-spacing: 1px;
         }
 
         .menu-btn:hover:not(:disabled) {
-            background: #ef4444;
-            color: #000000;
+            background: #000000;
+            color: #ef4444;
             border-color: #ef4444;
             transform: translateX(10px);
-            box-shadow: 0 0 25px rgba(239, 68, 68, 0.6);
+            box-shadow: -5px 0 15px rgba(239, 68, 68, 0.3);
         }
 
         .menu-btn:disabled {
             opacity: 0.15;
             cursor: not-allowed;
-            border-color: #0f172a;
+            border-color: #1e293b;
+            color: #475569;
         }
 
         .slot-status {
             font-size: 0.85rem;
             font-weight: 400;
-            opacity: 0.7;
+            opacity: 0.8;
         }
 
         .back-btn {
             border-color: #475569;
-            color: #94a3b8;
-            background: transparent;
+            color: #475569;
         }
 
         .back-btn:hover {
-            background: #ffffff !important;
-            color: #000000 !important;
+            background: #1e293b !important;
+            color: #ffffff !important;
             border-color: #ffffff !important;
-            box-shadow: 0 0 20px rgba(255, 255, 255, 0.4);
         }
     </style>
 </head>
 <body>
 
-    <!-- Angled Horror Smiley Face Graphics Layer -->
-    <div class="horror-face">
-        <svg viewBox="0 0 100 100" xmlns="http://w3.org">
-            <!-- Left Creepy Jagged Eye -->
-            <path d="M25,30 Q35,20 40,35 Q30,40 25,30 Z" fill="#ffffff"/>
-            <circle cx="34" cy="32" r="2" fill="#ef4444" />
-            
-            <!-- Right Creepy Jagged Eye -->
-            <path d="M75,30 Q65,20 60,35 Q70,40 75,30 Z" fill="#ffffff"/>
-            <circle cx="66" cy="32" r="2" fill="#ef4444" />
-            
-            <!-- Wide Sinister Stitched/Sharp Grin -->
-            <path d="M15,55 Q50,85 85,55 Q50,70 15,55 Z" fill="#ffffff"/>
-            <!-- Sharp Teeth Details inside grin -->
-            <path d="M25,58 L28,64 L32,59 L36,66 L41,60 L46,68 L51,60 L56,68 L61,60 L66,66 L70,59 L73,63 L77,57" stroke="#000000" stroke-width="1" fill="none"/>
-        </svg>
-    </div>
+    <!-- Inline Vector SVG Graphic: Horrifying Blood-Red Creepy Smile Face -->
+    <svg class="horror-face" viewBox="0 0 200 200" xmlns="http://w3.org">
+        <!-- Jagged, Hollow Left Eye -->
+        <path d="M 40,60 Q 55,40 70,65 Q 55,85 40,60 Z" fill="#ef4444" />
+        <path d="M 45,62 Q 55,50 65,65" stroke="#000" stroke-width="2" fill="none" />
+        
+        <!-- Jagged, Hollow Right Eye -->
+        <path d="M 130,65 Q 145,40 160,60 Q 145,85 130,65 Z" fill="#ef4444" />
+        <path d="M 135,65 Q 145,50 155,62" stroke="#000" stroke-width="2" fill="none" />
+        
+        <!-- Wide, Stitched Unsettling Smile -->
+        <path d="M 30,110 Q 100,180 170,110 Q 100,140 30,110 Z" fill="#ef4444" />
+        
+        <!-- Jagged Teeth/Stitch lines detailing across mouth -->
+        <path d="M 50,118 L 55,135 M 75,123 L 78,144 M 100,125 L 100,146 M 125,123 L 122,144 M 150,118 L 145,135" stroke="#000000" stroke-width="2.5" />
+    </svg>
 
     <div class="menu-container">
-        <h1 class="game-title">The Descent</h1>
+        <h1 class="game-title">The Hollow<br>Cafe</h1>
         
-        <!-- Main Home Screen Menu -->
+        <!-- Main Dashboard View -->
         <div id="mainScreen" class="menu-screen">
             <button id="mainNewGameBtn" class="menu-btn">New Game</button>
             <button id="mainContinueBtn" class="menu-btn">Continue</button>
         </div>
 
-        <!-- Slot Selection Screen -->
+        <!-- Dynamic Profile Slots View -->
         <div id="slotScreen" class="menu-screen hidden">
-            <h2 id="slotScreenTitle" style="font-size: 1.3rem; margin-bottom: 0.5rem; color: #64748b; text-transform: uppercase; letter-spacing: 1px;">Select a File</h2>
+            <h2 id="slotScreenTitle" style="font-size: 1.2rem; margin-bottom: 0.5rem; color: #64748b; text-transform: uppercase;">Select a File</h2>
             
             <button class="menu-btn slot-btn" data-slot="1">New Game <span class="slot-status"></span></button>
             <button class="menu-btn slot-btn" data-slot="2">New Game <span class="slot-status"></span></button>
@@ -168,8 +162,8 @@
     </div>
 
     <script>
-        const SAVE_PREFIX = 'my_horror_game_slot_';
-        let currentMode = '';
+        const SAVE_PREFIX = 'hollow_cafe_slot_';
+        let currentMode = ''; 
 
         document.addEventListener('DOMContentLoaded', () => {
             const mainScreen = document.getElementById('mainScreen');
@@ -181,6 +175,7 @@
             const backBtn = document.getElementById('backBtn');
             const slotButtons = document.querySelectorAll('.slot-btn');
 
+            // Scans local browser storage arrays to toggle main continue availability checks
             function refreshMainMenu() {
                 let hasAnySave = false;
                 for (let i = 1; i <= 5; i++) {
@@ -192,9 +187,10 @@
                 mainContinueBtn.disabled = !hasAnySave;
             }
 
+            // Updates the slot descriptions based on whether they contain data or are empty
             function setupSlotButtons(mode) {
                 currentMode = mode;
-                slotScreenTitle.textContent = mode === 'new' ? 'Corrupt a new slot:' : 'Resume data string:';
+                slotScreenTitle.textContent = mode === 'new' ? 'Choose a slot to overwrite:' : 'Choose a file to load:';
 
                 slotButtons.forEach(btn => {
                     const slotId = btn.getAttribute('data-slot');
@@ -202,15 +198,16 @@
 
                     if (savedData) {
                         const data = JSON.parse(savedData);
-                        btn.innerHTML = `File ${slotId} <span class="slot-status">Depth ${data.level} (Saved)</span>`;
-                        btn.disabled = false;
+                        btn.innerHTML = `File ${slotId} <span class="slot-status">Night ${data.night} (Active)</span>`;
+                        btn.disabled = false; 
                     } else {
-                        btn.innerHTML = `New Game <span class="slot-status">[Empty]</span>`;
-                        btn.disabled = (mode === 'continue');
+                        btn.innerHTML = `New Game <span class="slot-status">Empty Slot</span>`;
+                        btn.disabled = (mode === 'continue'); // Can't load an empty slot
                     }
                 });
             }
 
+            // Main Menu interactions
             mainNewGameBtn.addEventListener('click', () => {
                 mainScreen.classList.add('hidden');
                 slotScreen.classList.remove('hidden');
@@ -229,6 +226,7 @@
                 refreshMainMenu();
             });
 
+            // Handle individual file slot interactions
             slotButtons.forEach(btn => {
                 btn.addEventListener('click', () => {
                     const slotId = btn.getAttribute('data-slot');
@@ -237,28 +235,25 @@
 
                     if (currentMode === 'new') {
                         if (existingSave) {
-                            const overwrite = confirm(`Warning: Overwriting File ${slotId} will permanently purge its data history. Continue?`);
+                            const overwrite = confirm(`File ${slotId} already contains progress. Wipe data and start over at The Cafe?`);
                             if (!overwrite) return;
                         }
 
+                        // Generate default initial profile metrics
                         const newGameData = {
-                            level: 1,
+                            night: 1,
                             score: 0,
-                            timestamp: new Date().toLocaleDateString()
+                            time: "12:00 AM"
                         };
                         localStorage.setItem(slotKey, JSON.stringify(newGameData));
-                        alert(`File ${slotId} initialized.`);
+                        alert(`Opening File Slot ${slotId}... Welcome to Night 1.`);
+                        // window.location.href = 'game.html?slot=' + slotId;
 
                     } else if (currentMode === 'continue') {
                         if (existingSave) {
                             const data = JSON.parse(existingSave);
-                            alert(`Loading File ${slotId}... returning to Depth ${data.level}`);
+                            alert(`Resuming File ${slotId}... Loading Night ${data.night}.`);
+                            // window.location.href = 'game.html?slot=' + slotId;
                         }
                     }
                     
-                    slotScreen.classList.add('hidden');
-                    mainScreen.classList.remove('hidden');
-                    refreshMainMenu();
-                });
-            });
-

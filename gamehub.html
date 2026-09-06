@@ -13,7 +13,7 @@
         }
 
         body {
-            background-color: #0b131a; /* Styled teal/dark background matching the image perimeter */
+            background-color: #0b131a; 
             height: 100vh;
             overflow: hidden;
             display: flex;
@@ -61,7 +61,7 @@
             border-radius: 4px;
             box-shadow: 0 0 15px rgba(255, 159, 10, 0.4);
             letter-spacing: 1px;
-            display: none; /* Controlled dynamically via distance engine check loops */
+            display: none; 
             z-index: 1000;
             pointer-events: none;
         }
@@ -102,38 +102,38 @@
         let exitDoor = { x: 40, y: 410, w: 50, h: 50, color: '#ff9f0a' };
         let isNearDoor = false;
 
-        // 🧱 SOLID INTERIOR STRUCTURAL WALLS (Forces a clean 4-room bird's-eye separation)
+        // 🧱 SOLID INTERIOR STRUCTURAL WALLS
         let houseWalls = [
             // Structural Exterior Shell Boundaries
-            { x: 30, y: 30, w: 732, h: 12 },   // Top shell wall
-            { x: 30, y: 460, w: 732, h: 12 },  // Bottom shell wall
-            { x: 30, y: 30, w: 12, h: 442 },   // Left shell wall
-            { x: 750, y: 30, w: 12, h: 442 },  // Right shell wall
+            { x: 30, y: 30, w: 732, h: 12 },   
+            { x: 30, y: 460, w: 732, h: 12 },  
+            { x: 30, y: 30, w: 12, h: 442 },   
+            { x: 750, y: 30, w: 12, h: 442 },  
 
-            // Main Room Partitions (Left-to-Right / Top-to-Bottom Layout grid splits)
-            { x: 390, y: 30, w: 12, h: 160 },  // Vertical divider top segment
-            { x: 390, y: 260, w: 12, h: 212 }, // Vertical divider bottom segment
-            { x: 42, y: 240, w: 358, h: 12 },  // Left side horizontal room dividing split
-            { x: 390, y: 240, w: 372, h: 12 }  // Right side horizontal room dividing split
+            // Main Room Partitions
+            { x: 390, y: 30, w: 12, h: 160 },  
+            { x: 390, y: 260, w: 12, h: 212 }, 
+            { x: 42, y: 240, w: 358, h: 12 },  
+            { x: 390, y: 240, w: 372, h: 12 }  
         ];
 
         // 🪑 PALETTE MATCHED ROOM FURNITURE BLOCK CONFIGURATIONS
         let houseFurniture = [
-            // Room 1: Master Bedroom (Top Left - Pink/Peach Accent Theme)
+            // Room 1: Master Bedroom (Top Left)
             { x: 55, y: 55, w: 70, h: 80, color: '#a21caf', label: 'Double Bed Matrix' },
             { x: 300, y: 55, w: 45, h: 45, color: '#312e81', label: 'Storage Wardrobe Unit' },
             { x: 320, y: 175, w: 40, h: 50, color: '#475569', label: 'Dressing Desk Space' },
 
-            // Room 2: Cozy Lounge Area (Bottom Left - Warm Tan Theme)
+            // Room 2: Cozy Lounge Area (Bottom Left)
             { x: 60, y: 275, w: 120, h: 45, color: '#b45309', label: 'Cushioned Leather Sofa' },
             { x: 260, y: 275, w: 110, h: 110, color: '#78350f', label: 'Central Living Table Carpet' },
 
-            // Room 3: Modern Kitchenette (Top Right - Industrial Wood Theme)
+            // Room 3: Modern Kitchenette (Top Right)
             { x: 430, y: 55, w: 180, h: 35, color: '#334155', label: 'Granite Appliance Counter' },
             { x: 450, y: 130, w: 70, h: 70, color: '#1e293b', label: 'Breakfast Dining Station' },
             { x: 685, y: 55, w: 50, h: 70, color: '#64748b', label: 'Heavy Double-Door Refrigerator' },
 
-            // Room 4: Recreation Studio (Bottom Right - Dark Walnut Theme)
+            // Room 4: Recreation Studio (Bottom Right)
             { x: 430, y: 390, w: 140, h: 55, color: '#0f172a', label: 'Entertainment Media Shelf' },
             { x: 670, y: 280, w: 65, h: 65, color: '#111827', label: 'Storage Trunk Base' }
         ];
@@ -175,7 +175,6 @@
             if (keys.a) { nextX -= player.speed; player.isMoving = true; }
             if (keys.d) { nextX += player.speed; player.isMoving = true; }
 
-            // Collision resolution loops filtering wall and object models bounds
             if (!evaluateCollisionWithWalls(nextX, player.y) && !evaluateCollisionWithFurniture(nextX, player.y)) {
                 player.x = nextX;
             }
@@ -183,7 +182,6 @@
                 player.y = nextY;
             }
 
-            // Simple walking frame stride progression logic checks
             if (player.isMoving) {
                 player.animTimer++;
                 if (player.animTimer > 10) {
@@ -216,7 +214,6 @@
         }
 
         function checkInteractionTriggers() {
-            // Evaluates mathematical centers offset lines distance checks
             let pCenterX = player.x + player.width / 2;
             let pCenterY = player.y + player.height / 2;
             let dCenterX = exitDoor.x + exitDoor.w / 2;
@@ -229,12 +226,11 @@
                 isNearDoor = true;
                 promptElement.style.display = 'block';
 
-                // ⚡ DETECT EXPLICIT KEY ENGAGEMENT TRIGGERS FOR THE INTERACT ROUTINE
                 if (keys.e) {
-                    keys.e = false; // Reset trigger state array
+                    keys.e = false; 
                     cancelAnimationFrame(loopId);
                     alert("Leaving the house... commuting down to your shift at The Hollow Cafe.");
-                    window.location.href = 'gamefloor.html?shift=active'; // Proceeds right into gameplay floors loops!
+                    window.location.href = 'gamefloor.html?shift=active'; 
                 }
             } else {
                 isNearDoor = false;
@@ -243,11 +239,33 @@
         }
 
         function renderCompositeGraphicsFrame() {
-            // 1. Draw out perimeter background canvas fills color lines panels
+            // 1. Draw out background
             ctx.fillStyle = '#1e293b';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
             // 2. Render internal house floor space bounds
-            ctx.fillStyle = '#1e1b4b'; // Deep dark house internal carpet tone palette base
+            ctx.fillStyle = '#1e1b4b'; 
             ctx.fillRect(42, 42, 708, 418);
 
+            ctx.fillStyle = 'rgba(219, 39, 119, 0.08)'; 
+            ctx.fillRect(42, 42, 348, 198);
+            ctx.fillStyle = 'rgba(180, 83, 9, 0.06)';  
+            ctx.fillRect(42, 252, 348, 208);
+            ctx.fillStyle = 'rgba(71, 85, 105, 0.07)'; 
+            ctx.fillRect(402, 42, 348, 198);
+
+            // 3. Render Front Exit Door tile block (Fixed: changed strokeRect to ctx.strokeRect)
+            ctx.fillStyle = exitDoor.color;
+            ctx.fillRect(exitDoor.x, exitDoor.y, exitDoor.w, exitDoor.h);
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(exitDoor.x, exitDoor.y, exitDoor.w, exitDoor.h);
+            
+            ctx.fillStyle = '#000000';
+            ctx.font = 'bold 11px Courier New';
+            ctx.fillText("EXIT", exitDoor.x + 12, exitDoor.y + 28);
+
+            // 4. Render furniture asset boxes (Fixed: changed strokeRect to ctx.strokeRect)
+            for (let obj of houseFurniture) {
+                ctx.fillStyle = obj.color;
+                ctx.fillRect(obj.x, obj.y, obj.w, obj.h);

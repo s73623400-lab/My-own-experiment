@@ -73,50 +73,6 @@
             z-index: 10;
         }
 
-        /* INTERACTION TITLE SCREEN TERMINAL OVERLAY */
-        #interactionScreen {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.95);
-            z-index: 99999; 
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 15px;
-            text-align: center;
-            padding: 30px;
-        }
-
-        .menu-title {
-            font-size: 2.3rem;
-            font-weight: 900;
-            letter-spacing: 3px;
-            text-shadow: 0 0 15px #b91c1c;
-        }
-
-        .menu-btn {
-            background: #1a0202;
-            border: 2px solid #b91c1c;
-            color: #b91c1c;
-            padding: 14px 40px;
-            font-size: 1.2rem;
-            font-weight: bold;
-            cursor: pointer;
-            text-transform: uppercase;
-            border-radius: 4px;
-            transition: all 0.2s;
-        }
-
-        .menu-btn:hover {
-            background: #b91c1c;
-            color: #000000;
-            box-shadow: 0 0 25px #b91c1c;
-        }
-
         /* CONSOLE BOX FEEDBACK SYSTEM */
         .dialogue-box {
             height: 110px;
@@ -155,14 +111,6 @@
         </div>
 
         <div class="viewport-wrapper">
-            
-            <!-- INTERACTIVE POP-UP MODAL PANEL (Guaranteed Click Trigger Engine) -->
-            <div id="interactionScreen">
-                <h1 id="screenTitle" class="menu-title">THE HOLLOW CAFE</h1>
-                <p id="screenDesc" style="color: #9ca3af; max-width: 600px;">Wake up. You have an urgent shift configuration files request pending on your terminal board layout structures.</p>
-                <button id="screenActionBtn" class="menu-btn" onclick="bootSmallHouseEngine()">Clock In</button>
-            </div>
-
             <!-- SURVIVAL GRID LAYER CANVAS -->
             <canvas id="gameCanvas" width="794" height="450"></canvas>
         </div>
@@ -170,7 +118,7 @@
         <!-- NOTIFICATION DIALOGUE BAR CONTAINER -->
         <div class="dialogue-box">
             <div id="dialogueSpeaker" class="dialogue-speaker">LOG CONSOLE</div>
-            <div id="dialogueText" class="dialogue-text">System operational. Click "Clock In" to load your house map workspace structures directly.</div>
+            <div id="dialogueText" class="dialogue-text">Move your red character with WASD keys. Aim your flashlight beam with the MOUSE cursor. Avoid touching the purple television anomaly...</div>
         </div>
     </div>
 
@@ -178,7 +126,6 @@
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
 
-        let isEngineRunning = false;
         let loopId = null;
 
         // Player configurations starting metrics centered inside our cottage bedroom
@@ -199,21 +146,18 @@
             document.getElementById('dialogueText').innerText = text;
         }
 
-        // TRIGGER METHOD SWITCHING PANELS TO LOAD LIVE GAME MAP INSTANTLY ON CLICKS
-        function bootSmallHouseEngine() {
-            document.getElementById('interactionScreen').style.display = 'none';
-            isEngineRunning = true;
-            
-            // Wire tracking event listeners directly to window frame engines
+        // 🛡️ CRITICAL RUNTIME AUTO-START: Fires the game engine immediately without any buttons
+        window.onload = function() {
+            // Instantly wire movement trackers to your device
             window.addEventListener('keydown', handleKeyDown);
             window.addEventListener('keyup', handleKeyUp);
             canvas.addEventListener('mousemove', handleMouseMove);
 
-            setConsoleLog("HOUSE DIARY", "Your smartphone buzzes on the nightstand. Use WASD to navigate and check your furniture. Sweeping your MOUSE aims your flashlight beam.");
+            setConsoleLog("HOUSE DIARY", "Your smartphone buzzes on the nightstand. WASD keys move your character circle. Sweeping your mouse targets your 🔦 light beam.");
             
             if (loopId) cancelAnimationFrame(loopId);
             loopId = requestAnimationFrame(houseEngineFrameCycle);
-        }
+        };
 
         function handleKeyDown(e) {
             let key = e.key.toLowerCase();
@@ -231,11 +175,8 @@
 
         // MAIN RECURSIVE PHYSICS ANIMATION LOOPS CORE WHEEL
         function houseEngineFrameCycle() {
-            if (!isEngineRunning) return;
-
             updatePlayerPhysicsVectors();
             renderHouseGraphicsLayers();
-
             loopId = requestAnimationFrame(houseEngineFrameCycle);
         }
 
@@ -279,3 +220,41 @@
         }
 
         function renderHouseGraphicsLayers() {
+            // 1. Solid pitch floor backdrop configuration draw mapping actions
+            ctx.fillStyle = '#060608';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // 2. Render subtle home tiling framework grids floor vectors lines
+            ctx.strokeStyle = '#121215';
+            ctx.lineWidth = 1;
+            for(let i=0; i<canvas.width; i+=40) {
+                ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, canvas.height); ctx.stroke();
+            }
+            for(let j=0; j<canvas.height; j+=40) {
+                ctx.beginPath(); ctx.moveTo(0, j); ctx.lineTo(canvas.width, j); ctx.stroke();
+            }
+
+            // 3. Render house structure shapes layouts blueprints onto canvas deck matrix channels
+            for (let obj of mapObjects) {
+                ctx.fillStyle = obj.color;
+                ctx.fillRect(obj.x, obj.y, obj.w, obj.h);
+                ctx.strokeStyle = '#2d1515';
+                ctx.strokeRect(obj.x, obj.y, obj.w, obj.h);
+            }
+
+            // 4. 🔦 HORROR AMBIENT LIGHTING MASK FLASHLIGHT LENS SHROUD ENGINE
+            ctx.save();
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.97)'; // Creates heavy midnight blinders layout view
+            ctx.beginPath();
+            ctx.rect(0, 0, canvas.width, canvas.height);
+            
+            // Slice structural paths cutting a visual key wedge out pointing towards aiming crosshairs markers
+            ctx.moveTo(player.x, player.y);
+            const raySpreadArc = 0.40; // Focal spread width size configurations for ray beams
+            ctx.arc(player.x, player.y, 220, player.angle - raySpreadArc, player.angle + raySpreadArc);
+            ctx.lineTo(player.x, player.y);
+            
+            ctx.closePath();
+            ctx.fill('evenodd'); // Erases masking block internally where flashlight field paths overlap geometries
+            ctx.restore();
+

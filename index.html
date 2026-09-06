@@ -21,102 +21,6 @@
             justify-content: flex-start;
             padding-left: 10%;
             overflow: hidden;
-            position: relative;
-        }
-
-        /* 1. ANIMATED HORROR FACE CONTAINER */
-        .horror-face-container {
-            position: absolute;
-            top: 12%;
-            right: 8%;
-            width: 380px;
-            height: 380px;
-            transform: rotate(12deg);
-            opacity: 0.75;
-            z-index: 1;
-            /* Subtly animates the face like it's breathing */
-            animation: floatingDistortion 4s ease-in-out infinite alternate;
-        }
-
-        @keyframes floatingDistortion {
-            0% { transform: rotate(12deg) scale(1); opacity: 0.65; }
-            100% { transform: rotate(14deg) scale(1.03); opacity: 0.85; filter: drop-shadow(0 0 15px #ef4444); }
-        }
-
-        /* Glowing Slit-Pupil Eyes */
-        .horror-eye {
-            position: absolute;
-            width: 85px;
-            height: 35px;
-            background: #1a0202;
-            border: 2px solid #b91c1c;
-            border-radius: 90% 10% 90% 10%; /* Makes eyes look unnaturally sharp and tilted */
-            box-shadow: 0 0 20px #7f1d1d;
-        }
-
-        .horror-eye::after {
-            content: '';
-            position: absolute;
-            top: 15%;
-            left: 48%;
-            width: 6px;
-            height: 24px;
-            background: #ef4444;
-            border-radius: 50%;
-            box-shadow: 0 0 12px #ffffff;
-        }
-
-        .eye-left {
-            top: 40px;
-            left: 20px;
-            transform: scaleX(-1) rotate(25deg); /* Flips the left eye shape */
-        }
-
-        .eye-right {
-            top: 25px;
-            right: 20px;
-            transform: rotate(20deg);
-        }
-
-        /* 2. CUSTOM HAUNTED JAGGED SMILE */
-        .horror-mouth {
-            position: absolute;
-            bottom: 30px;
-            left: 40px;
-            width: 280px;
-            height: 120px;
-            background: #110000;
-            border: 3px solid #b91c1c;
-            border-radius: 10% 10% 85% 85%; /* Hollow wide grin dynamic shape */
-            box-shadow: 0 10px 30px rgba(185, 28, 28, 0.5);
-            overflow: hidden; /* Clips the inner elements to form teeth */
-        }
-
-        /* Top Row of Teeth */
-        .horror-mouth::before {
-            content: '';
-            position: absolute;
-            top: -2px;
-            left: 0;
-            width: 100%;
-            height: 30px;
-            /* Pure CSS repeating linear gradients to render sharp triangles */
-            background: repeating-linear-gradient(45deg, transparent, transparent 10px, #b91c1c 10px, #b91c1c 20px),
-                        repeating-linear-gradient(-45deg, transparent, transparent 10px, #b91c1c 10px, #b91c1c 20px);
-            background-blend-mode: multiply;
-        }
-
-        /* Bottom Row of Teeth */
-        .horror-mouth::after {
-            content: '';
-            position: absolute;
-            bottom: -4px;
-            left: 0;
-            width: 100%;
-            height: 30px;
-            background: repeating-linear-gradient(45deg, transparent, transparent 12px, #991b1b 12px, #991b1b 24px),
-                        repeating-linear-gradient(-45deg, transparent, transparent 12px, #991b1b 12px, #991b1b 24px);
-            background-blend-mode: multiply;
         }
 
         .menu-container {
@@ -125,7 +29,6 @@
             gap: 2rem;
             max-width: 450px;
             width: 100%;
-            z-index: 10;
         }
 
         .game-title {
@@ -148,6 +51,7 @@
             display: none !important;
         }
 
+        /* Fully styled interactive button rules */
         .menu-btn {
             background: rgba(10, 0, 0, 0.9);
             border: 2px solid #450a0a;
@@ -157,7 +61,7 @@
             font-weight: bold;
             text-align: left;
             border-radius: 4px;
-            cursor: pointer;
+            cursor: pointer; /* Confirms element is interactive by altering the mouse pointer */
             transition: all 0.2s ease;
             width: 100%;
             display: flex;
@@ -166,6 +70,7 @@
             text-transform: uppercase;
         }
 
+        /* Hover animation response */
         .menu-btn:hover:not(:disabled) {
             background: #b91c1c;
             color: #000000;
@@ -200,23 +105,17 @@
 </head>
 <body>
 
-    <!-- Redesigned Haunted Horror Face Setup -->
-    <div class="horror-face-container">
-        <div class="horror-eye eye-left"></div>
-        <div class="horror-eye eye-right"></div>
-        <div class="horror-mouth"></div>
-    </div>
-
     <div class="menu-container">
         <h1 class="game-title">The Hollow Cafe</h1>
         
-        <!-- Main Screen -->
+        <!-- Main Screen (Home Menu) -->
         <div id="mainScreen" class="menu-screen">
+            <!-- These are authentic <button> elements wired to click listeners -->
             <button id="mainNewGameBtn" class="menu-btn">New Game</button>
             <button id="mainContinueBtn" class="menu-btn">Continue</button>
         </div>
 
-        <!-- 5 Slots Screen -->
+        <!-- Sub-Screen containing the 5 individual save profiles -->
         <div id="slotScreen" class="menu-screen hidden">
             <h2 id="slotScreenTitle" style="font-size: 1.2rem; margin-bottom: 0.5rem; color: #7f1d1d;">SELECT TARGET FILES</h2>
             
@@ -244,6 +143,7 @@
             const backBtn = document.getElementById('backBtn');
             const slotButtons = document.querySelectorAll('.slot-btn');
 
+            // Evaluates local browser storage to determine if 'Continue' should remain locked
             function refreshMainMenu() {
                 let hasAnySave = false;
                 for (let i = 1; i <= 5; i++) {
@@ -255,6 +155,7 @@
                 mainContinueBtn.disabled = !hasAnySave;
             }
 
+            // Sets up conditional styling and statuses for individual slot targets
             function setupSlotButtons(mode) {
                 currentMode = mode;
                 slotScreenTitle.textContent = mode === 'new' ? 'CHOOSE A SLOT TO OVERWRITE:' : 'LOAD ACTIVE ENTRY:';
@@ -274,21 +175,61 @@
                 });
             }
 
+            // EXPLICIT CLICK LISTENER FOR THE NEW GAME BUTTON
             mainNewGameBtn.addEventListener('click', () => {
-                mainScreen.classList.add('hidden');
-                slotScreen.classList.remove('hidden');
-                setupSlotButtons('new');
+                mainScreen.classList.add('hidden');      // Hides the home screen view
+                slotScreen.classList.remove('hidden');  // Reveals the 5 game slots sub-screen view
+                setupSlotButtons('new');                 // Sets up configurations for new profile assignment
             });
 
+            // EXPLICIT CLICK LISTENER FOR THE CONTINUE BUTTON
             mainContinueBtn.addEventListener('click', () => {
                 mainScreen.classList.add('hidden');
                 slotScreen.classList.remove('hidden');
                 setupSlotButtons('continue');
             });
 
+            // EXPLICIT CLICK LISTENER FOR THE BACK BUTTON
             backBtn.addEventListener('click', () => {
                 slotScreen.classList.add('hidden');
                 mainScreen.classList.remove('hidden');
                 refreshMainMenu();
             });
 
+            // Allocation click configurations for managing slot save updates
+            slotButtons.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const slotId = btn.getAttribute('data-slot');
+                    const slotKey = SAVE_PREFIX + slotId;
+                    const existingSave = localStorage.getItem(slotKey);
+
+                    if (currentMode === 'new') {
+                        if (existingSave) {
+                            const overwrite = confirm(`Warning: Data exists in Slot ${slotId}. Overwrite progress?`);
+                            if (!overwrite) return;
+                        }
+
+                        // Save data profile generation object
+                        const newGameData = {
+                            day: 1,
+                            time: new Date().toLocaleDateString()
+                        };
+                        localStorage.setItem(slotKey, JSON.stringify(newGameData));
+                        alert(`Starting New Game in Slot ${slotId}... entering the Cafe.`);
+                        
+                    } else if (currentMode === 'continue' && existingSave) {
+                        const data = JSON.parse(existingSave);
+                        alert(`Resuming Slot ${slotId} on Day ${data.day}...`);
+                    }
+                    
+                    slotScreen.classList.add('hidden');
+                    mainScreen.classList.remove('hidden');
+                    refreshMainMenu();
+                });
+            });
+
+            refreshMainMenu();
+        });
+    </script>
+</body>
+</html>

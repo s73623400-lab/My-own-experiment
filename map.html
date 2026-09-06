@@ -5,11 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Interactive Coffee Shop Game</title>
     <style>
-        /* Base page resetting styles */
         body {
             margin: 0;
             padding: 20px;
-            background-color: #232731; /* Swapped backdrop to match standard windows */
+            background-color: #232731;
             color: #ffffff;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             display: flex;
@@ -28,23 +27,24 @@
             border-radius: 12px;
             padding: 24px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            position: relative;
             box-sizing: border-box;
         }
 
-        /* 🗺️ THE FLOOR MAP - Completely rebuilt colors to ensure perfect element visibility */
         #game-floor-map {
             position: relative;
             width: 100%;
             height: 380px;
-            background-color: #0f1115; /* Clean contrasting dark asphalt tone */
-            border: 4px solid #ff9f0a;  /* Bright neon border outlines the game frame window instantly */
+            background-color: #0f1115;
+            border: 4px solid #ff9f0a;
             border-radius: 8px;
             overflow: hidden;
             margin-bottom: 20px;
             box-sizing: border-box;
+            cursor: pointer;
         }
 
-        /* 🛒 SHOP BUTTON LAYOUT */
+        /* 🛒 FIXED SHOP Z-INDEX */
         #shop-btn {
             position: absolute;
             top: 15px;
@@ -56,17 +56,17 @@
             border-radius: 6px;
             font-weight: bold;
             cursor: pointer;
-            z-index: 10;
+            z-index: 25; /* Elevated layer to guarantee click actions */
         }
 
-        /* MACHINE STATION ROW (Positioned behind counter deck layer) */
         .appliance-shelf {
             position: absolute;
             top: 20px;
             right: 25px;
-            left: 130px;
+            left: 140px;
             display: flex;
             justify-content: space-around;
+            pointer-events: none; /* Prevents blocking clicks to the floor map beneath */
         }
         .appliance {
             background-color: #2e3440;
@@ -78,16 +78,27 @@
             font-weight: bold;
         }
 
-        /* THE BARISTA WORK STATION COUNTER ISLAND */
+        /* 🟢 FIXED COUNTER TEXT AND CLICK CLIPPING BUG */
         #barista-counter {
             position: absolute;
             top: 150px;
             left: 0;
             width: 100%;
             height: 35px;
-            background-color: #3b4252; /* Contrast adjustment against the floor grid layout */
+            background-color: #3b4252;
             border-top: 3px solid #ff9f0a;
             border-bottom: 3px solid #ff9f0a;
+            pointer-events: none; /* CRITICAL FIX: Clicks now pass completely through the wall directly onto the floor coordinates */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .counter-label-text {
+            color: rgba(255, 255, 255, 0.4);
+            font-size: 11px;
+            font-weight: bold;
+            letter-spacing: 2px;
+            text-transform: uppercase;
         }
         #register-box {
             position: absolute;
@@ -95,11 +106,11 @@
             top: -8px;
             width: 25px;
             height: 8px;
-            background-color: #ff3b30; /* High visibility red cash register indicator box */
+            background-color: #ff3b30;
             border-radius: 2px;
         }
 
-        /* OUTLET ENTRANCE ACCESS GATE */
+        /* 🔴 FIXED DOOR Z-INDEX POSITIONING */
         #shop-doorway {
             position: absolute;
             bottom: 0;
@@ -112,10 +123,12 @@
             text-align: center;
             font-weight: bold;
             line-height: 14px;
+            z-index: 25;
+            cursor: pointer;
         }
         #shop-doorway.closed { background-color: #ff3b30; color: white; }
 
-        /* CIRCULAR CHARACTER TOKENS (PLAYER, CUSTOMERS, COURIERS) */
+        /* CHARACTER TOKENS LAYER */
         .token {
             position: absolute;
             width: 36px;
@@ -127,10 +140,10 @@
             font-size: 11px;
             font-weight: bold;
             color: white;
-            cursor: pointer;
             box-shadow: 0 4px 8px rgba(0,0,0,0.4);
             box-sizing: border-box;
-            z-index: 5;
+            z-index: 10;
+            pointer-events: auto;
         }
 
         #player-barista {
@@ -138,6 +151,7 @@
             border: 2px solid #ffffff;
             left: 600px;
             top: 90px;
+            transition: left 0.2s ease-out, top 0.2s ease-out; /* Smooth path tracking movement */
         }
 
         .customer-dot { border: 2px solid transparent; }
@@ -149,7 +163,6 @@
             100% { border-color: #ffffff; }
         }
 
-        /* CLIENT MENU POPUP DIALOGUE CARD */
         .dialogue-bubble {
             position: absolute;
             background: #ffffff;
@@ -163,7 +176,7 @@
             box-shadow: 0 4px 6px rgba(0,0,0,0.3);
         }
 
-        /* INTERACTION LAYOUT STRIP */
+        /* 🔵 CONTROL DASHBOARD WORKSPACE BUTTONS */
         #control-panel {
             display: flex;
             justify-content: space-between;
@@ -182,11 +195,15 @@
             cursor: pointer;
             box-shadow: 0 2px 5px rgba(0,0,0,0.2);
         }
-        .game-btn:disabled { background-color: #4b5563; color: #9ca3af; cursor: not-allowed; box-shadow: none; }
-        #door-toggle-btn { background-color: #30d158; color: black; }
+        .game-btn:disabled { 
+            background-color: #374151; 
+            color: #6b7280; 
+            cursor: not-allowed; 
+            box-shadow: none; 
+        }
+        #door-toggle-btn { background-color: #30d158; color: black; z-index: 26; }
         #door-toggle-btn.is-closed { background-color: #ff3b30; color: white; }
 
-        /* HEADS UP HUD METRICS PLATFORM */
         #hud-dashboard {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -197,7 +214,7 @@
         .hud-box .title { color: #9ca3af; font-size: 13px; margin-bottom: 4px; }
         .hud-box .stat { font-size: 20px; font-weight: bold; color: #ffffff; }
 
-        /* APP SYSTEM MODAL INTERFACES */
+        /* POPUP SYSTEM MODALS */
         .overlay-card {
             position: absolute;
             top: 50%;
@@ -205,7 +222,7 @@
             transform: translate(-50%, -50%);
             border-radius: 16px;
             display: none;
-            z-index: 20;
+            z-index: 50; /* Overrides gameplay layers perfectly */
             box-shadow: 0 25px 50px rgba(0,0,0,0.7);
             box-sizing: border-box;
         }
@@ -248,6 +265,7 @@
     <div id="game-container">
         <div id="game-floor-map" onclick="handleMapClick(event)">
             
+            <!-- Safe click buttons with stopPropagation to isolate map clicks -->
             <button id="shop-btn" onclick="openShop(true); event.stopPropagation();">SHOP [🛒]</button>
 
             <div class="appliance-shelf">
@@ -258,19 +276,20 @@
 
             <div id="barista-counter">
                 <div id="register-box"></div>
+                <!-- Center name text added -->
+                <div class="counter-label-text">Counter Bar</div>
             </div>
 
-            <!-- Native Element Overlay Node List Layer -->
             <div id="character-layer">
                 <div id="player-barista" class="token">You</div>
             </div>
 
-            <div id="shop-doorway">Door Open</div>
+            <div id="shop-doorway" onclick="toggleStoreDoor(); event.stopPropagation();">Door Open</div>
         </div>
 
         <div id="control-panel">
             <button id="door-toggle-btn" class="game-btn" onclick="toggleStoreDoor()">Shop Door: OPEN</button>
-            <button id="serve-customer-btn" class="game-btn" onclick="processOrderTicket()" disabled>Walk behind Counter to Serve</button>
+            <button id="serve-customer-btn" class="game-btn" onclick="processOrderTicket()" disabled>Walk left behind counter to Serve</button>
         </div>
 
         <div id="hud-dashboard">
@@ -288,10 +307,4 @@
             </div>
         </div>
 
-        <!-- Phone Tracker Interface -->
-        <div id="phone-overlay" class="overlay-card">
-            <div class="phone-display">
-                <div>
-                    <div style="text-align:center; color:#30d158; font-weight:bold; border-bottom:1px solid #2c2c2e; padding-bottom:5px;">⚡ Courier App</div>
-                    <div id="phone-text-body" style="font-size:12px; padding-top:15px; line-height:1.5; color:#ffffff;"></div>
-                </div>
+        <!-- Phone UI Overlay -->

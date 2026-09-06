@@ -3,280 +3,224 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Hollow Cafe - In-Chat Playable</title>
+    <title>Barista Employment Registry</title>
     <style>
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-            font-family: 'Courier New', Courier, monospace;
         }
 
-        body {
-            background-color: #050505;
-            color: #b91c1c;
-            height: 100vh;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
+        html, body {
+            height: 100% !important;
+            width: 100% !important;
+            background-color: #1a1d24 !important;
         }
 
-        #gameContainer {
-            width: 800px;
-            background: #000;
-            border: 3px solid #450a0a;
-            box-shadow: 0 0 40px rgba(185, 28, 28, 0.3);
-            display: flex;
-            flex-direction: column;
-            position: relative;
-        }
-
-        /* DATA HUD */
-        .hud-banner {
-            background-color: #110000;
-            border-bottom: 2px solid #450a0a;
-            padding: 12px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .hud-item {
-            font-size: 1rem;
-            font-weight: bold;
+        h2 {
+            margin-top: 0;
+            color: #ff9f0a;
+            font-size: 22px;
+            border-bottom: 2px solid #374151;
+            padding-bottom: 10px;
+            text-transform: uppercase;
             letter-spacing: 1px;
         }
 
-        .hud-value {
+        .form-group {
+            margin-bottom: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        label {
+            font-size: 13px;
+            color: #9ca3af;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        input[type="text"] {
+            background-color: #12141c;
+            border: 1px solid #4b5563;
+            border-radius: 6px;
+            padding: 12px;
             color: #ffffff;
-            text-shadow: 0 0 8px rgba(255, 255, 255, 0.5);
-        }
-
-        /* VIEWPORT SCREEN */
-        .viewport-wrapper {
-            position: relative;
-            width: 794px;
-            height: 450px;
-            overflow: hidden;
-        }
-
-        #gameCanvas {
-            background-color: #0b0b0d;
-            cursor: crosshair;
-            display: block;
-        }
-
-        /* CONSOLE OUTPUT DIALOGUE */
-        .dialogue-box {
-            height: 110px;
-            background-color: #0a0000;
-            border-top: 2px solid #450a0a;
-            padding: 15px 25px;
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-        }
-
-        .dialogue-speaker {
-            font-size: 0.9rem;
-            color: #ff9f0a;
-            font-weight: bold;
-            text-transform: uppercase;
-        }
-
-        .dialogue-text {
-            font-size: 1rem;
-            color: #f3f4f6;
-            line-height: 1.3;
-        }
-
-        /* INTERACTION PROMPT INTERFACE Overlay */
-        #interactionScreen {
-            position: absolute;
-            top: 0;
-            left: 0;
+            font-size: 15px;
+            outline: none;
+            transition: border-color 0.2s;
             width: 100%;
-            height: 450px;
-            background: rgba(0, 0, 0, 0.93);
-            z-index: 100;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 15px;
-            text-align: center;
-            padding: 30px;
         }
 
-        .menu-title {
-            font-size: 2.5rem;
-            font-weight: 900;
-            letter-spacing: 4px;
-            text-shadow: 0 0 15px #b91c1c;
-            color: #b91c1c;
+        input[type="text"]:focus {
+            border-color: #2563eb;
         }
 
-        .menu-btn {
-            background: #1a0202;
-            border: 2px solid #b91c1c;
-            color: #b91c1c;
-            padding: 12px 30px;
-            font-size: 1.1rem;
+        .faded-hint-text {
+            font-size: 13px;
+            color: rgba(156, 163, 175, 0.35);
+            font-style: italic;
+            margin-top: 2px;
+        }
+
+        .btn-submit {
+            width: 100%;
+            background-color: #2563eb;
+            color: white;
+            border: none;
+            padding: 14px;
+            font-size: 16px;
             font-weight: bold;
+            border-radius: 8px;
             cursor: pointer;
-            text-transform: uppercase;
-            border-radius: 4px;
-            transition: all 0.2s;
-            z-index: 110;
+            transition: background-color 0.2s;
+            margin-top: 10px;
         }
 
-        .menu-btn:hover {
-            background: #b91c1c;
-            color: #000;
-            box-shadow: 0 0 20px #b91c1c;
-            transform: scale(1.03);
+        .btn-submit:hover {
+            background-color: #1d4ed8;
         }
 
-        .instructions {
-            color: #888;
-            font-size: 0.85rem;
-            line-height: 1.4;
-            max-width: 550px;
-        }
-
-        /* ✨ NEW DYNAMIC COFFEE ALIAS BANNER */
-        .cafe-signin-banner {
-            color: #ff9f0a;
-            font-size: 1.1rem;
+        .btn-continue {
+            width: 100%;
+            background-color: rgba(255, 159, 10, 0.15); 
+            color: rgba(243, 244, 246, 0.25);          
+            border: 1px dashed rgba(255, 159, 10, 0.3);
+            padding: 14px;
+            font-size: 16px;
             font-weight: bold;
-            letter-spacing: 1px;
-            margin: 5px 0;
-            text-shadow: 0 0 8px rgba(255, 159, 10, 0.3);
-            text-transform: uppercase;
+            border-radius: 8px;
+            margin-top: 15px;
+            text-align: center;
+            cursor: not-allowed;
+            pointer-events: none; 
+            transition: all 0.3s ease-in-out;
+        }
+
+        .btn-continue.unlocked {
+            background-color: #ff9f0a !important;
+            color: #000000 !important;
+            border: none !important;
+            cursor: pointer !important;
+            pointer-events: auto !important; 
+            box-shadow: 0 4px 14px rgba(255, 159, 10, 0.4);
+        }
+
+        .btn-continue.unlocked:hover {
+            background-color: #e08b04 !important;
+            transform: scale(1.01);
+        }
+
+        #badge-output {
+            margin-top: 25px;
+            background-color: #12141c;
+            border: 1px dashed #ff9f0a;
+            border-radius: 8px;
+            padding: 15px;
+            display: none;
         }
     </style>
 </head>
-<body>
+<body style="display: flex !important; justify-content: center !important; align-items: center !important; min-height: 100vh !important; width: 100vw !important;">
 
-    <div id="gameContainer">
+    <div class="registry-card" style="width: 90% !important; max-width: 480px !important; background-color: #232731 !important; border: 2px solid #374151 !important; border-radius: 12px !important; padding: 30px !important; box-shadow: 0 10px 30px rgba(0,0,0,0.5) !important; color: #f3f4f6 !important; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important; user-select: none !important;">
+        <h2>Shift Registry File</h2>
         
-        <!-- DATA TRACKER BAR -->
-        <div class="hud-banner">
-            <div class="hud-item">BARISTA: <span id="hud-barista-name" class="hud-value">STAFF</span></div>
-            <div class="hud-item">POWER GENERATOR: <span id="hud-power" class="hud-value" style="color: #22c55e;">100%</span></div>
-            <div class="hud-item">THREAT INDEX: <span id="hud-threat" class="hud-value" style="color: #ff9f0a;">NONE</span></div>
+        <div class="form-group">
+            <label for="username">Staff Name:</label>
+            <input type="text" id="username" placeholder="E.g. Zack" autocomplete="off">
         </div>
 
-        <!-- PLAYABLE WORLD VIEWPORT -->
-        <div class="viewport-wrapper">
-            
-            <!-- OVERLAY MENU MODULE SYSTEM -->
-            <div id="interactionScreen">
-                <h1 id="screenTitle" class="menu-title">THE HOLLOW CAFE</h1>
-                <p id="screenDesc" style="color: #9ca3af;">Something crept inside through the maintenance ventilation hatches tonight.</p>
-                
-                <div class="instructions">
-                    <strong>CONTROLS:</strong> WASD Keys to navigate across the floor plane grid.<br>
-                    Aim your physical mouse pointer to point your 🔦 flashlight beam.<br>
-                    <strong>OBJECTIVE:</strong> Repair the flickering generators before your light runs dry. Avoid the red crawling anomalies stalking you in the darkness.
-                </div>
-
-                <!-- ✨ DYNAMIC INJECTED SIGN IN DETAILS BLOCK (Placed under objective, above instructions) -->
-                <div id="cafeSigninText" class="cafe-signin-banner">YOU SIGN IN TO: Loading System Credentials...</div>
-
-                <!-- Verified fully clickable interactive button framework link -->
-                <button id="screenActionBtn" class="menu-btn" onclick="startChatShift()">Boot Shift Routine</button>
-            </div>
-
-            <!-- RENDERING CANVAS BOX SCREEN -->
-            <canvas id="gameCanvas" width="794" height="450"></canvas>
+        <div class="form-group">
+            <label for="birthplace">Place of Birth:</label>
+            <input type="text" id="birthplace" placeholder="E.g. London" autocomplete="off">
         </div>
 
-        <!-- DIALOGUE SYSTEM BOX -->
-        <div class="dialogue-box">
-            <div id="dialogueSpeaker" class="dialogue-speaker">LOG INTERFACE</div>
-            <div id="dialogueText" class="dialogue-text">System initializes. Press "Boot Shift Routine" to connect your controller anchors directly into the cafe deck grids.</div>
+        <div class="form-group">
+            <label>Registry Time Metric:</label>
+            <div id="dynamic-date" class="faded-hint-text">System calculating DOB placeholder...</div>
+        </div>
+
+        <div class="form-group">
+            <label for="coffeename">Coffee Name Alias:</label>
+            <input type="text" id="coffeename" placeholder="E.g. Espresso King" autocomplete="off">
+        </div>
+
+        <!-- Lock Button -->
+        <button class="btn-submit" onclick="generateStaffBadge()">Lock File & Start Shift</button>
+
+        <!-- 🎯 LINKED CONTINUE TRIGGER ELEMENT -->
+        <div id="continue-link-btn" class="btn-continue" onclick="advanceToGameFloor()">
+            Continue ➔
+        </div>
+
+        <!-- Feedback Console Area -->
+        <div id="badge-output">
+            <span style="color:#ff9f0a; font-weight:bold; font-size:12px; text-transform:uppercase;">Verified Profile Locked:</span>
+            <p style="margin: 8px 0 4px 0; font-size:15px;" id="output-line-1"></p>
+            <p style="margin: 0; font-size:13px; color:#9ca3af;" id="output-line-2"></p>
         </div>
     </div>
 
     <script>
-        const canvas = document.getElementById('gameCanvas');
-        const ctx = canvas.getContext('2d');
-
         const SAVE_PREFIX = 'hollow_cafe_slot_';
-        let currentProfile = null;
-        let gameRunning = false;
-        let powerLevel = 100;
-        let loopId = null;
 
-        // Player configurations
-        let player = {
-            x: 100,
-            y: 225,
-            size: 12,
-            speed: 2.8,
-            angle: 0
-        };
-
-        // Threat objects matrix
-        let anomalies = [
-            { x: 500, y: 80, size: 10, speedX: 1.2, speedY: 0.8, color: '#ff0000' },
-            { x: 650, y: 350, size: 14, speedX: -1.0, speedY: -1.4, color: '#ff0000' }
-        ];
-
-        // Level collision grid bounds
-        let mapObjects = [
-            { x: 340, y: 100, w: 40, h: 250, color: '#27272a', label: 'Serving Counter' },
-            { x: 700, y: 40, w: 45, h: 45, color: '#eab308', label: 'Power Generator Engine', repaired: false },
-            { x: 700, y: 360, w: 45, h: 45, color: '#eab308', label: 'Auxiliary Fuselage Core', repaired: false }
-        ];
-
-        let keys = { w: false, a: false, s: false, d: false };
-        let mouse = { x: 0, y: 0 };
-
-        // Pull active parameters dynamically on load cycles
         window.onload = function() {
-            fetchActiveRegistryData();
+            generateRandomDOB();
         };
 
-        function fetchActiveRegistryData() {
-            // Target slots mapping configurations from local storage profile registers
-            const urlParams = new URLSearchParams(window.location.search);
-            let slotId = urlParams.get('slot') || localStorage.getItem('hollow_cafe_current_configuring_slot') || '1';
-            const rawData = localStorage.getItem(SAVE_PREFIX + slotId);
+        function generateRandomDOB() {
+            const startYear = 1985;
+            const endYear = 2005;
+            const randomYear = Math.floor(Math.random() * (endYear - startYear + 1)) + startYear;
+            const randomMonth = Math.floor(Math.random() * 12) + 1;
+            const randomDay = Math.floor(Math.random() * 28) + 1;
+            
+            const formattedDate = `${randomDay.toString().padStart(2, '0')}/${randomMonth.toString().padStart(2, '0')}/${randomYear}`;
+            document.getElementById('dynamic-date').innerText = `DOB Auto-Generated: ${formattedDate} (Faded Verification Token)`;
+        }
 
-            if (rawData) {
-                currentProfile = JSON.parse(rawData);
-                // Sync labels directly to user entries parameters
-                document.getElementById('hud-barista-name').innerText = `${currentProfile.name.toUpperCase()} [STAFF]`;
-                document.getElementById('cafeSigninText').innerText = `YOU SIGN IN TO: ${currentProfile.alias.toUpperCase()}`;
-            } else {
-                // Fallback default mockup strings if running outside github connection architecture pools
-                document.getElementById('hud-barista-name').innerText = "ZACK [STAFF]";
-                document.getElementById('cafeSigninText').innerText = "YOU SIGN IN TO: ESPRESSO KING";
+        function generateStaffBadge() {
+            const name = document.getElementById('username').value.trim();
+            const place = document.getElementById('birthplace').value.trim();
+            const coffeeAlias = document.getElementById('coffeename').value.trim();
+
+            if (!name || !place || !coffeeAlias) {
+                alert("🔒 Access Denied: You must complete Staff Name, Place of Birth, and Coffee Name entries before locking profiles.");
+                return;
             }
+
+            const outputBox = document.getElementById('badge-output');
+            document.getElementById('output-line-1').innerHTML = `Welcome to the grid, <strong>${name}</strong> [Alias: <em>${coffeeAlias}</em>]`;
+            document.getElementById('output-line-2').innerHTML = `📍 Origin Verified: ${place} | Security clearance approved.`;
+            outputBox.style.display = 'block';
+
+            // Fetches the profile number chosen on your main screen menu
+            const activeSlot = localStorage.getItem('hollow_cafe_current_configuring_slot') || '1';
+            const slotKey = SAVE_PREFIX + activeSlot;
+
+            // Packs your character parameters to carry over to gamefloor.html
+            const newGameData = {
+                name: name,
+                birthplace: place,
+                alias: coffeeAlias,
+                day: 1,
+                timestamp: new Date().toLocaleDateString()
+            };
+            localStorage.setItem(slotKey, JSON.stringify(newGameData));
+
+            const continueBtn = document.getElementById('continue-link-btn');
+            continueBtn.classList.add('unlocked');
+            continueBtn.innerText = "Continue to Game Floor ➔";
         }
 
-        function setConsoleLog(speaker, msg) {
-            document.getElementById('dialogueSpeaker').innerText = speaker.toUpperCase();
-            document.getElementById('dialogueText').innerText = msg;
+        // 🔗 FORWARDS USER DIRECTLY TO THE GAMEFLOOR WINDOW
+        function advanceToGameFloor() {
+            const activeSlot = localStorage.getItem('hollow_cafe_current_configuring_slot') || '1';
+            window.location.href = 'gamefloor.html?slot=' + activeSlot;
         }
-
-        // TRIGGER METHOD FIRING ON CLICK TO START ENGINE 
-        function startChatShift() {
-            document.getElementById('interactionScreen').style.display = 'none';
-            gameRunning = true;
-            powerLevel = 100;
-            anomalies[0].x = 500; anomalies[0].y = 80;
-            anomalies[1].x = 650; anomalies[1].y = 350;
-            mapObjects[1].repaired = false; mapObjects[1].color = '#eab308';
-            mapObjects[2].repaired = false; mapObjects[2].color = '#eab308';
-            player.x = 100; player.y = 225;
-
-            // Wire input systems hooks directly to event listeners arrays
-            window.addEventListener('keydown', handleKeyDown);
-            window.addEventListener('keyup', handleKeyUp);
-            canvas.addEventListener('mousemove', handleMouseMove);
-
+    </script>
+</body>
+</html>

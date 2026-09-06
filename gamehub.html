@@ -3,150 +3,71 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Hollow Cafe - House Floor</title>
+    <title>The Hollow Cafe - Sprite Arena</title>
     <style>
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-            font-family: 'Courier New', Courier, monospace;
         }
 
         body {
-            background-color: #0b131a; 
+            background-color: #111116;
             height: 100vh;
             overflow: hidden;
             display: flex;
-            flex-direction: column;
-            align-items: center;
             justify-content: center;
-        }
-
-        #gameContainer {
-            width: 800px;
-            background: #000;
-            border: 4px solid #450a0a;
-            box-shadow: 0 0 40px rgba(0, 0, 0, 0.7);
-            display: flex;
-            flex-direction: column;
-            position: relative;
-        }
-
-        /* SCREEN CANVAS VIEWPORT */
-        .viewport-wrapper {
-            position: relative;
-            width: 792px;
-            height: 500px;
-            overflow: hidden;
-            background-color: #0f172a;
+            align-items: center;
         }
 
         #gameCanvas {
+            background-color: #000000;
+            border: 4px solid #b91c1c; 
+            box-shadow: 0 0 30px rgba(185, 28, 28, 0.4);
             display: block;
-            cursor: default;
-        }
-
-        /* 💡 FLOATING IN-GAME INTERACTION TEXT BANNER OVERLAY */
-        #interactionPrompt {
-            position: absolute;
-            bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(17, 0, 0, 0.9);
-            border: 2px solid #ff9f0a;
-            color: #ff9f0a;
-            padding: 12px 24px;
-            font-size: 1.1rem;
-            font-weight: bold;
-            border-radius: 4px;
-            box-shadow: 0 0 15px rgba(255, 159, 10, 0.4);
-            letter-spacing: 1px;
-            display: none; 
-            z-index: 1000;
-            pointer-events: none;
         }
     </style>
 </head>
 <body>
 
-    <div id="gameContainer">
-        <div class="viewport-wrapper">
-            <!-- DYNAMIC INTERACTION HUD PROMPT BLOCK -->
-            <div id="interactionPrompt">[INTERACT: (E) GO TO WORK]</div>
-
-            <!-- RETRO GRAPHICS RENDERING LAYER -->
-            <canvas id="gameCanvas" width="792" height="500"></canvas>
-        </div>
-    </div>
+    <canvas id="gameCanvas" width="800" height="450"></canvas>
 
     <script>
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
+
         ctx.imageSmoothingEnabled = false;
 
-        let loopId = null;
-
-        // 👤 PLAYER SPRITE INITIALIZATION (Spawns in Bedroom)
+        // 👤 PLAYER SPRITE CONFIGURATION PARAMETERS
         let player = {
-            x: 100,
-            y: 100,
-            width: 28,
-            height: 32,
-            speed: 3.5,
+            x: 400,
+            y: 300,       // Spawn slightly lower down so they don't get stuck inside the counter
+            width: 32,   
+            height: 36,
+            speed: 4,
             isMoving: false,
             animTimer: 0,
-            walkFrame: 0
+            walkFrame: 0 
         };
 
-        // 🚪 FRONT EXIT DOOR LOGIC ANCHORS (Bottom Left Corner Area)
-        let exitDoor = { x: 40, y: 410, w: 50, h: 50, color: '#ff9f0a' };
-        let isNearDoor = false;
-
-        // 🧱 SOLID INTERIOR STRUCTURAL WALLS
-        let houseWalls = [
-            // Structural Exterior Shell Boundaries
-            { x: 30, y: 30, w: 732, h: 12 },   
-            { x: 30, y: 460, w: 732, h: 12 },  
-            { x: 30, y: 30, w: 12, h: 442 },   
-            { x: 750, y: 30, w: 12, h: 442 },  
-
-            // Main Room Partitions
-            { x: 390, y: 30, w: 12, h: 160 },  
-            { x: 390, y: 260, w: 12, h: 212 }, 
-            { x: 42, y: 240, w: 358, h: 12 },  
-            { x: 390, y: 240, w: 372, h: 12 }  
+        // 🪑 COLLISION ENGINE OBJECT MATRICES (Counter, Machines, and Laptop zones)
+        let mapObjects = [
+            // The Barista Counter bounding rectangle box
+            { x: 160, y: 140, w: 480, h: 60, color: '#451a03', borderColor: '#78350f', label: 'Barista Counter' },
+            // Left Coffee Brewer Machine
+            { x: 200, y: 90, w: 50, h: 50, color: '#334155', borderColor: '#475569', label: 'Espresso Unit A' },
+            // Right Coffee Brewer Machine
+            { x: 550, y: 90, w: 50, h: 50, color: '#334155', borderColor: '#475569', label: 'Espresso Unit B' },
+            // Centered Laptop Notebook
+            { x: 375, y: 125, w: 50, h: 25, color: '#0f172a', borderColor: '#38bdf8', label: 'Staff Laptop Terminal' }
         ];
 
-        // 🪑 PALETTE MATCHED ROOM FURNITURE BLOCK CONFIGURATIONS
-        let houseFurniture = [
-            // Room 1: Master Bedroom (Top Left)
-            { x: 55, y: 55, w: 70, h: 80, color: '#a21caf', label: 'Double Bed Matrix' },
-            { x: 300, y: 55, w: 45, h: 45, color: '#312e81', label: 'Storage Wardrobe Unit' },
-            { x: 320, y: 175, w: 40, h: 50, color: '#475569', label: 'Dressing Desk Space' },
-
-            // Room 2: Cozy Lounge Area (Bottom Left)
-            { x: 60, y: 275, w: 120, h: 45, color: '#b45309', label: 'Cushioned Leather Sofa' },
-            { x: 260, y: 275, w: 110, h: 110, color: '#78350f', label: 'Central Living Table Carpet' },
-
-            // Room 3: Modern Kitchenette (Top Right)
-            { x: 430, y: 55, w: 180, h: 35, color: '#334155', label: 'Granite Appliance Counter' },
-            { x: 450, y: 130, w: 70, h: 70, color: '#1e293b', label: 'Breakfast Dining Station' },
-            { x: 685, y: 55, w: 50, h: 70, color: '#64748b', label: 'Heavy Double-Door Refrigerator' },
-
-            // Room 4: Recreation Studio (Bottom Right)
-            { x: 430, y: 390, w: 140, h: 55, color: '#0f172a', label: 'Entertainment Media Shelf' },
-            { x: 670, y: 280, w: 65, h: 65, color: '#111827', label: 'Storage Trunk Base' }
-        ];
-
-        let keys = { w: false, a: false, s: false, d: false, e: false };
+        let keys = { w: false, a: false, s: false, d: false };
 
         window.onload = function() {
             window.addEventListener('keydown', (e) => {
                 let key = e.key.toLowerCase();
-                if (key in keys) {
-                    keys[key] = true;
-                    if (key === 'w' || key === 'a' || key === 's' || key === 'd') e.preventDefault();
-                }
+                if (key in keys) keys[key] = true;
             });
 
             window.addEventListener('keyup', (e) => {
@@ -154,118 +75,148 @@
                 if (key in keys) keys[key] = false;
             });
 
-            if (loopId) cancelAnimationFrame(loopId);
-            loopId = requestAnimationFrame(mainGameEngineLoop);
+            requestAnimationFrame(engineFrameUpdateLoop);
         };
 
-        function mainGameEngineLoop() {
-            updatePlayerMovementPhysics();
-            checkInteractionTriggers();
-            renderCompositeGraphicsFrame();
-            loopId = requestAnimationFrame(mainGameEngineLoop);
-        }
-
-        function updatePlayerMovementPhysics() {
+        function engineFrameUpdateLoop() {
             player.isMoving = false;
             let nextX = player.x;
             let nextY = player.y;
 
+            // Process movement inputs matrix
             if (keys.w) { nextY -= player.speed; player.isMoving = true; }
             if (keys.s) { nextY += player.speed; player.isMoving = true; }
             if (keys.a) { nextX -= player.speed; player.isMoving = true; }
             if (keys.d) { nextX += player.speed; player.isMoving = true; }
 
-            if (!evaluateCollisionWithWalls(nextX, player.y) && !evaluateCollisionWithFurniture(nextX, player.y)) {
+            // Active path obstruction checking (prevents clipping through walls/furniture)
+            if (!checkSolidObjectCollisions(nextX, player.y)) {
                 player.x = nextX;
             }
-            if (!evaluateCollisionWithWalls(player.x, nextY) && !evaluateCollisionWithFurniture(player.x, nextY)) {
+            if (!checkSolidObjectCollisions(player.x, nextY)) {
                 player.y = nextY;
             }
 
+            // Hard boundary screens locks
+            if (player.x < 0) player.x = 0;
+            if (player.x > canvas.width - player.width) player.x = canvas.width - player.width;
+            if (player.y < 0) player.y = 0;
+            if (player.y > canvas.height - player.height) player.y = canvas.height - player.height;
+
+            // Step timeline loops mapping
             if (player.isMoving) {
                 player.animTimer++;
-                if (player.animTimer > 10) {
+                if (player.animTimer > 12) { 
                     player.walkFrame = player.walkFrame === 0 ? 1 : 0;
                     player.animTimer = 0;
                 }
             } else {
-                player.walkFrame = 0;
+                player.walkFrame = 0; 
             }
-        }
 
-        function evaluateCollisionWithWalls(x, y) {
-            for (let wall of houseWalls) {
-                if (x + player.width > wall.x && x < wall.x + wall.w &&
-                    y + player.height > wall.y && y < wall.y + wall.h) {
-                    return true;
-                }
-            }
-            return false;
-        }
-
-        function evaluateCollisionWithFurniture(x, y) {
-            for (let obj of houseFurniture) {
-                if (x + player.width > obj.x && x < obj.x + obj.w &&
-                    y + player.height > obj.y && y < obj.y + obj.h) {
-                    return true;
-                }
-            }
-            return false;
-        }
-
-        function checkInteractionTriggers() {
-            let pCenterX = player.x + player.width / 2;
-            let pCenterY = player.y + player.height / 2;
-            let dCenterX = exitDoor.x + exitDoor.w / 2;
-            let dCenterY = exitDoor.y + exitDoor.h / 2;
-
-            let distanceToExit = Math.hypot(pCenterX - dCenterX, pCenterY - dCenterY);
-            const promptElement = document.getElementById('interactionPrompt');
-
-            if (distanceToExit < 75) {
-                isNearDoor = true;
-                promptElement.style.display = 'block';
-
-                if (keys.e) {
-                    keys.e = false; 
-                    cancelAnimationFrame(loopId);
-                    alert("Leaving the house... commuting down to your shift at The Hollow Cafe.");
-                    window.location.href = 'gamefloor.html?shift=active'; 
-                }
-            } else {
-                isNearDoor = false;
-                promptElement.style.display = 'none';
-            }
-        }
-
-        function renderCompositeGraphicsFrame() {
-            // 1. Draw out background
-            ctx.fillStyle = '#1e293b';
+            // --- RENDERING PIPELINE ---
+            ctx.fillStyle = '#0a0a0c';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            // 2. Render internal house floor space bounds
-            ctx.fillStyle = '#1e1b4b'; 
-            ctx.fillRect(42, 42, 708, 418);
+            // Background matrix grids
+            ctx.strokeStyle = '#222226';
+            ctx.lineWidth = 1;
+            for (let i = 0; i < canvas.width; i += 40) {
+                ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, canvas.height); ctx.stroke();
+            }
+            for (let j = 0; j < canvas.height; j += 40) {
+                ctx.beginPath(); ctx.moveTo(0, j); ctx.lineTo(canvas.width, j); ctx.stroke();
+            }
 
-            ctx.fillStyle = 'rgba(219, 39, 119, 0.08)'; 
-            ctx.fillRect(42, 42, 348, 198);
-            ctx.fillStyle = 'rgba(180, 83, 9, 0.06)';  
-            ctx.fillRect(42, 252, 348, 208);
-            ctx.fillStyle = 'rgba(71, 85, 105, 0.07)'; 
-            ctx.fillRect(402, 42, 348, 198);
-
-            // 3. Render Front Exit Door tile block (Fixed: changed strokeRect to ctx.strokeRect)
-            ctx.fillStyle = exitDoor.color;
-            ctx.fillRect(exitDoor.x, exitDoor.y, exitDoor.w, exitDoor.h);
-            ctx.strokeStyle = '#ffffff';
-            ctx.lineWidth = 2;
-            ctx.strokeRect(exitDoor.x, exitDoor.y, exitDoor.w, exitDoor.h);
-            
-            ctx.fillStyle = '#000000';
-            ctx.font = 'bold 11px Courier New';
-            ctx.fillText("EXIT", exitDoor.x + 12, exitDoor.y + 28);
-
-            // 4. Render furniture asset boxes (Fixed: changed strokeRect to ctx.strokeRect)
-            for (let obj of houseFurniture) {
+            // 🎯 DRAW BACKSTAGE WORKPLACE ASSETS (Counter, Brewer nodes, Laptop screen)
+            for (let obj of mapObjects) {
+                // Main color fill panel
                 ctx.fillStyle = obj.color;
                 ctx.fillRect(obj.x, obj.y, obj.w, obj.h);
+                
+                // Border highlight strokes lines
+                ctx.strokeStyle = obj.borderColor;
+                ctx.lineWidth = 2;
+                ctx.strokeRect(obj.x, obj.y, obj.w, obj.h);
+
+                // Injects extra custom pixel designs depending on labels string definitions
+                if (obj.label.includes('Espresso')) {
+                    // Draw a glowing steam button and glass nozzle tip indicator onto brewers
+                    ctx.fillStyle = '#ef4444';
+                    ctx.fillRect(obj.x + 8, obj.y + 10, 6, 6);
+                    ctx.fillStyle = '#38bdf8';
+                    ctx.fillRect(px === undefined ? obj.x + 22 : obj.x + 22, obj.y + 35, 6, 12);
+                }
+                
+                if (obj.label.includes('Laptop')) {
+                    // Draw a glowing display window lid opening panel line matrix
+                    ctx.fillStyle = 'rgba(56, 189, 248, 0.4)';
+                    ctx.fillRect(obj.x + 4, obj.y + 4, obj.w - 8, obj.h - 14);
+                    ctx.fillStyle = '#ffffff';
+                    ctx.fillRect(obj.x + 12, obj.y + 18, obj.w - 24, 2);
+                }
+            }
+
+            // 🎯 DRAW RETRO CHARACTER AVATAR
+            let px = player.x;
+            let py = player.y;
+
+            // 1. Black Hair Outlines
+            ctx.fillStyle = '#000000';
+            ctx.fillRect(px + 4, py + 12, 4, 10);
+            ctx.fillRect(px + 24, py + 12, 4, 10);
+
+            // 2. Skin Face Base Layer
+            ctx.fillStyle = '#fbcfe8'; 
+            ctx.fillRect(px + 6, py + 10, 20, 16);
+
+            // 3. Eyes Detailing
+            ctx.fillStyle = '#000000';
+            ctx.fillRect(px + 10, py + 14, 2, 4);
+            ctx.fillRect(px + 20, py + 14, 2, 4);
+
+            // 4. Mustache
+            ctx.fillStyle = '#451a03';
+            ctx.fillRect(px + 10, py + 20, 12, 2);
+
+            // 5. Red Cap Brim Hat
+            ctx.fillStyle = '#dc2626'; 
+            ctx.fillRect(px + 4, py + 2, 24, 8);  
+            ctx.fillRect(px + 2, py + 6, 28, 4);  
+
+            // 6. Red Shirt Torso
+            ctx.fillStyle = '#dc2626';
+            ctx.fillRect(px + 4, py + 26, 24, 6);
+
+            // 7. Blue Denim Overalls
+            ctx.fillStyle = '#2563eb';
+            ctx.fillRect(px + 8, py + 26, 4, 6);  
+            ctx.fillRect(px + 20, py + 26, 4, 6); 
+            ctx.fillRect(px + 8, py + 30, 16, 4); 
+
+            // 8. Dynamic Walking Boot Steps
+            ctx.fillStyle = '#991b1b'; 
+            if (player.walkFrame === 0) {
+                ctx.fillRect(px + 6, py + 34, 6, 4);
+                ctx.fillRect(px + 20, py + 34, 6, 4);
+            } else {
+                ctx.fillRect(px + 6, py + 32, 6, 4);
+                ctx.fillRect(px + 20, py + 34, 6, 4);
+            }
+
+            requestAnimationFrame(engineFrameUpdateLoop);
+        }
+
+        // Mathematical rectangle-intersection collision helper function
+        function checkSolidObjectCollisions(x, y) {
+            for (let obj of mapObjects) {
+                if (x + player.width > obj.x && x < obj.x + obj.w &&
+                    y + player.height > obj.y && y < obj.y + obj.h) {
+                    return true; // Stop movement tracking path vector
+                }
+            }
+            return false;
+        }
+    </script>
+</body>
+</html>

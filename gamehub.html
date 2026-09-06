@@ -1,1 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Hollow Cafe - In-Chat Playable</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Courier New', Courier, monospace;
+        }
+
+        body {
+            background-color: #050505;
+            color: #b91c1c;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #gameContainer {
+            width: 800px;
+            background: #000;
+            border: 3px solid #450a0a;
+            box-shadow: 0 0 40px rgba(185, 28, 28, 0.3);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        /* DATA HUD */
+        .hud-banner {
+            background-color: #110000;
+            border-bottom: 2px solid #450a0a;
+            padding: 12px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .hud-item {
+            font-size: 1rem;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+
+        .hud-value {
+            color: #ffffff;
+            text-shadow: 0 0 8px rgba(255, 255, 255, 0.5);
+        }
+
+        /* VIEWPORT SCREEN */
+        .viewport-wrapper {
+            position: relative;
+            width: 794px;
+            height: 450px;
+            overflow: hidden;
+        }
+
+        #gameCanvas {
+            background-color: #0b0b0d;
+            cursor: crosshair;
+            display: block;
+        }
+
+        /* CONSOLE OUTPUT DIALOGUE */
+        .dialogue-box {
+            height: 110px;
+            background-color: #0a0000;
+            border-top: 2px solid #450a0a;
+            padding: 15px 25px;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .dialogue-speaker {
+            font-size: 0.9rem;
+            color: #ff9f0a;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .dialogue-text {
+            font-size: 1rem;
+            color: #f3f4f6;
+            line-height: 1.3;
+        }
+
+        /* INTERACTION PROMPT INTERFACE Overlay */
+        #interactionScreen {
+            position: absolute;
+            top: 45px;
+            left: 0;
+            width: 100%;
+            height: 450px;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            text-align: center;
+            padding: 40px;
+        }
+
+        .menu-title {
+            font-size: 2.5rem;
+            font-weight: 900;
+            letter-spacing: 4px;
+            text-shadow: 0 0 15px #b91c1c;
+        }
+
+        .menu-btn {
+            background: #1a0202;
+            border: 2px solid #b91c1c;
+            color: #b91c1c;
+            padding: 12px 30px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            text-transform: uppercase;
+            border-radius: 4px;
+            transition: all 0.2s;
+        }
+
+        .menu-btn:hover {
+            background: #b91c1c;
+            color: #000;
+            box-shadow: 0 0 20px #b91c1c;
+            transform: scale(1.03);
+        }
+
+        .instructions {
+            color: #888;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            max-width: 500px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- COMPLETE CONTAINED EMULATED CHAT GAME CORE BOARD -->
+    <div id="gameContainer">
+        
+        <!-- DATA TRACKER BAR -->
+        <div class="hud-banner">
+            <div class="hud-item">BARISTA: <span class="hud-value">ZACK [STAFF]</span></div>
+            <div class="hud-item">POWER GENERATOR: <span id="hud-power" class="hud-value" style="color: #22c55e;">100%</span></div>
+            <div class="hud-item">THREAT INDEX: <span id="hud-threat" class="hud-value" style="color: #ff9f0a;">NONE</span></div>
+        </div>
+
+        <!-- PLAYABLE WORLD INTERACTION VIEWPORT CHASSIS -->
+        <div class="viewport-wrapper">
+            
+            <!-- OVERLAY MENU MODULE SYSTEM -->
+            <div id="interactionScreen">
+                <h1 id="screenTitle" class="menu-title">THE HOLLOW CAFE</h1>
+                <p id="screenDesc" style="color: #9ca3af;">Something crept inside through the maintenance ventilation hatches tonight.</p>
+                <button id="screenActionBtn" class="menu-btn" onclick="startChatShift()">Boot Shift Routine</button>
+                <div class="instructions">
+                    <strong>CONTROLS:</strong> WASD Keys to navigate across the floor plane grid.<br>
+                    Aim your physical mouse pointer to point your 🔦 flashlight beam.<br>
+                    <strong>OBJECTIVE:</strong> Repair the flickering generators before your light runs dry. Avoid the red crawling anomalies stalking you in the darkness.
+                </div>
+            </div>
+
+            <!-- CORE RENDERING GRAPHICS WINDOW -->
+            <canvas id="gameCanvas" width="794" height="450"></canvas>
+        </div>
+
+        <!-- DIALOGUE CONSOLE SUB-SHEET SYSTEM -->
+        <div class="dialogue-box">
+            <div id="dialogueSpeaker" class="dialogue-speaker">LOG INTERFACE</div>
+            <div id="dialogueText" class="dialogue-text">System initializes. Press "Boot Shift Routine" to connect your controller anchors directly into the cafe deck grids.</div>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // GAME STATES CORE TRACKERS
+        let gameRunning = false;
+        let powerLevel = 100;
+        let threatLevel = "NONE";
+        let loopId = null;
+
+        // Player configuration specs
+        let player = {
+            x: 100,
+            y: 225,
+            size: 12,
+            speed: 2.8,
+            angle: 0
+        };
+
+        // Tracking anomalous threat entities array metrics
+        let anomalies = [
+            { x: 500, y: 80, size: 10, speedX: 1.2, speedY: 0.8, color: '#ff0000' },
+            { x: 650, y: 350, size: 14, speedX: -1.0, speedY: -1.4, color: '#ff0000' }
+        ];
+
+        // Static object collision layouts mapped directly into coordinate spaces
+        let mapObjects = [
+            { x: 340, y: 100, w: 40, h: 250, color: '#27272a', label: 'Serving Counter' },
+            { x: 700, y: 40, w: 45, h: 45, color: '#eab308', label: 'Power Generator Engine', repaired: false },
+            { x: 700, y: 360, w: 45, h: 45, color: '#eab308', label: 'Auxiliary Fuselage Core', repaired: false }
+        ];
+
+        let keys = { w: false, a: false, s: false, d: false };
+        let mouse = { x: 0, y: 0 };
+
+        function setConsoleLog(speaker, msg) {
+            document.getElementById('dialogueSpeaker').innerText = speaker.toUpperCase();
+            document.getElementById('dialogueText').innerText = msg;
+        }
+
+        // ENTRY NAVIGATION CORE MANAGER ROUTINE
+        function startChatShift() {
+            document.getElementById('interactionScreen').style.display = 'none';
+            gameRunning = true;
+            powerLevel = 100;
+            anomalies[0].x = 500; anomalies[0].y = 80;
+            anomalies[1].x = 650; anomalies[1].y = 350;
+            mapObjects[1].repaired = false; mapObjects[1].color = '#eab308';
+            mapObjects[2].repaired = false; mapObjects[2].color = '#eab308';
+            player.x = 100; player.y = 225;
+
+            initControlHooks();
+            setConsoleLog("SHIFT LOG", "Fuses blown. Main grids disconnected. Traverse the counter path to access the breaker targets in the eastern zone.");
+            
+            if (loopId) cancelAnimationFrame(loopId);
+            loopId = requestAnimationFrame(mainEngineCycle);
+        }
+
+        function initControlHooks() {
+            window.addEventListener('keydown', handleKeyDown);
+            window.addEventListener('keyup', handleKeyUp);
+            canvas.addEventListener('mousemove', handleMouseMove);
+        }
+
+        function handleKeyDown(e) {
+            if (!gameRunning) return;
+            let key = e.key.toLowerCase();
+            if (key in keys) {
+                keys[key] = true;
+                e.preventDefault(); // Lock browser scrolling mechanics
+            }
+        }
+
+        function handleKeyUp(e) {
+            let key = e.key.toLowerCase();
+            if (key in keys) keys[key] = false;
+        }
+
+        function handleMouseMove(e) {
+            const rect = canvas.getBoundingClientRect();
+            mouse.x = e.clientX - rect.left;
+            mouse.y = e.clientY - rect.top;
+        }
+
+        // ENGINE RUNTIME CONTROL LOOPS LOOP WHEEL
+        function mainEngineCycle() {
+            if (!gameRunning) return;
+
+            updatePhysicsEngine();
+            renderFrameLayer();
+            evaluateWinLossStates();
+
+            loopId = requestAnimationFrame(mainEngineCycle);
+        }
+
+        function updatePhysicsEngine() {
+            let nextX = player.x;
+            let nextY = player.y;
+
+            if (keys.w) nextY -= player.speed;
+            if (keys.s) nextY += player.speed;
+            if (keys.a) nextX -= player.speed;
+            if (keys.d) nextX += player.speed;
+
+            // Enforce hard wall limits container boundary allocations
+            if (nextX > player.size && nextX < canvas.width - player.size) {
+                if (!checkObstructionMatrices(nextX, player.y)) player.x = nextX;
+            }
+            if (nextY > player.size && nextY < canvas.height - player.size) {
 

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Hollow Cafe - Test Grid</title>
+    <title>The Hollow Cafe - Sprite Arena</title>
     <style>
         * {
             box-sizing: border-box;
@@ -22,7 +22,7 @@
 
         #gameCanvas {
             background-color: #000000;
-            border: 4px solid #b91c1c; /* Blood red border link */
+            border: 4px solid #b91c1c; 
             box-shadow: 0 0 30px rgba(185, 28, 28, 0.4);
             display: block;
         }
@@ -30,32 +30,30 @@
 </head>
 <body>
 
-    <!-- Minimal stable rendering window canvas -->
     <canvas id="gameCanvas" width="800" height="450"></canvas>
 
     <script>
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
 
-        // 🟢 PLAYER ENGINE BASE VALUES
+        // Disable smoothing to make the dynamically drawn pixels crisp and retro
+        ctx.imageSmoothingEnabled = false;
+
+        // 👤 PLAYER SPRITE CONFIGURATION PARAMETERS
         let player = {
-            x: 400, // Starts dead-center horizontally
-            y: 225, // Starts dead-center vertically
-            radius: 15,
-            speed: 4
+            x: 400,
+            y: 225,
+            width: 32,   // Sized up to look like a clean retro tile asset
+            height: 36,
+            speed: 4,
+            isMoving: false,
+            animTimer: 0,
+            walkFrame: 0 // Toggles between 0 and 1 for alternating feet movement steps
         };
 
-        // Key inputs state dictionary tracker
-        let keys = {
-            w: false,
-            a: false,
-            s: false,
-            d: false
-        };
+        let keys = { w: false, a: false, s: false, d: false };
 
-        // RUNTIME LIFECYCLE INITIALIZER HOOKS
         window.onload = function() {
-            // Bind movement listeners straight to your device keyboard handles
             window.addEventListener('keydown', (e) => {
                 let key = e.key.toLowerCase();
                 if (key in keys) keys[key] = true;
@@ -66,57 +64,98 @@
                 if (key in keys) keys[key] = false;
             });
 
-            // Start the core recursive processing animation cycle loops loop
             requestAnimationFrame(engineFrameUpdateLoop);
         };
 
-        // 🧠 RECURSIVE ENGINE LOOP WHEEL
         function engineFrameUpdateLoop() {
-            // 1. Process player axis updates tracking inputs matrix checks
-            if (keys.w) player.y -= player.speed;
-            if (keys.s) player.y += player.speed;
-            if (keys.a) player.x -= player.speed;
-            if (keys.d) player.x += player.speed;
+            player.isMoving = false;
 
-            // 2. Prevent player circle token from running out off the screen boundaries margins
-            if (player.x < player.radius) player.x = player.radius;
-            if (player.x > canvas.width - player.radius) player.x = canvas.width - player.radius;
-            if (player.y < player.radius) player.y = player.radius;
-            if (player.y > canvas.height - player.radius) player.y = canvas.height - player.radius;
+            // Process movement inputs matrix
+            if (keys.w) { player.y -= player.speed; player.isMoving = true; }
+            if (keys.s) { player.y += player.speed; player.isMoving = true; }
+            if (keys.a) { player.x -= player.speed; player.isMoving = true; }
+            if (keys.d) { player.x += player.speed; player.isMoving = true; }
 
-            // 3. Clear the frame buffer cleanly back to background black base colors
+            // Hard boundary locks to contain sprite on the screen grid
+            if (player.x < 0) player.x = 0;
+            if (player.x > canvas.width - player.width) player.x = canvas.width - player.width;
+            if (player.y < 0) player.y = 0;
+            if (player.y > canvas.height - player.height) player.y = canvas.height - player.height;
+
+            // Process step cycle animation speeds timers
+            if (player.isMoving) {
+                player.animTimer++;
+                if (player.animTimer > 12) { // Updates walking stance every 12 frames
+                    player.walkFrame = player.walkFrame === 0 ? 1 : 0;
+                    player.animTimer = 0;
+                }
+            } else {
+                player.walkFrame = 0; // Standard standing pose when still
+            }
+
+            // --- RENDERING PIPELINE ---
             ctx.fillStyle = '#0a0a0c';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            // 4. Draw basic navigation background matrix lines grids
+            // Draw dark room gridlines background matrix
             ctx.strokeStyle = '#222226';
             ctx.lineWidth = 1;
-            const gridSpacing = 40;
-
-            for (let i = 0; i < canvas.width; i += gridSpacing) {
-                ctx.beginPath();
-                ctx.moveTo(i, 0);
-                ctx.lineTo(i, canvas.height);
-                ctx.stroke();
+            for (let i = 0; i < canvas.width; i += 40) {
+                ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, canvas.height); ctx.stroke();
+            }
+            for (let j = 0; j < canvas.height; j += 40) {
+                ctx.beginPath(); ctx.moveTo(0, j); ctx.lineTo(canvas.width, j); ctx.stroke();
             }
 
-            for (let j = 0; j < canvas.height; j += gridSpacing) {
-                ctx.beginPath();
-                ctx.moveTo(0, j);
-                ctx.lineTo(canvas.width, j);
-                ctx.stroke();
+            // 🎯 DRAW RETRO CHARACTER AVATAR SPRITE BLOCK (Pixel-Art Engine Rendering)
+            let px = player.x;
+            let py = player.y;
+
+            // 1. Black Hair Outlines (Left and Right sides of head)
+            ctx.fillStyle = '#000000';
+            ctx.fillRect(px + 4, py + 12, 4, 10);
+            ctx.fillRect(px + 24, py + 12, 4, 10);
+
+            // 2. Skin Face Base Layer
+            ctx.fillStyle = '#fbcfe8'; // Peach-skin tone representation
+            ctx.fillRect(px + 6, py + 10, 20, 16);
+
+            // 3. Eyes Detailing
+            ctx.fillStyle = '#000000';
+            ctx.fillRect(px + 10, py + 14, 2, 4);
+            ctx.fillRect(px + 20, py + 14, 2, 4);
+
+            // 4. Overalls / Mustachio mouth area accent
+            ctx.fillStyle = '#451a03';
+            ctx.fillRect(px + 10, py + 20, 12, 2);
+
+            // 5. Red Cap Brim Hat
+            ctx.fillStyle = '#dc2626'; // Deep red dome cap matching your reference image
+            ctx.fillRect(px + 4, py + 2, 24, 8);  // Main cap base
+            ctx.fillRect(px + 2, py + 6, 28, 4);  // Cap extended side peak brim 
+
+            // 6. Main Red Shirt Torso Chest Area
+            ctx.fillStyle = '#dc2626';
+            ctx.fillRect(px + 4, py + 26, 24, 6);
+
+            // 7. Blue Denim Overalls/Straps Layer Accent
+            ctx.fillStyle = '#2563eb';
+            ctx.fillRect(px + 8, py + 26, 4, 6);  // Left overall strap block
+            ctx.fillRect(px + 20, py + 26, 4, 6); // Right overall strap block
+            ctx.fillRect(px + 8, py + 30, 16, 4); // Pants middle segment waistline
+
+            // 8. Dynamic Walking Boot Steps Stances
+            ctx.fillStyle = '#991b1b'; // Red-brown helper work boots
+            if (player.walkFrame === 0) {
+                // Stance 1: Standing / Left Foot Down
+                ctx.fillRect(px + 6, py + 34, 6, 4);
+                ctx.fillRect(px + 20, py + 34, 6, 4);
+            } else {
+                // Stance 2: Alternating Right Foot Walking Step Raised Profile
+                ctx.fillRect(px + 6, py + 32, 6, 4);
+                ctx.fillRect(px + 20, py + 34, 6, 4);
             }
 
-            // 5. Draw the player target blue circle token asset avatar
-            ctx.beginPath();
-            ctx.arc(player.x, player.y, player.radius, 0, Math.PI * 2);
-            ctx.fillStyle = '#2563eb'; // High-visibility tech blue player node circle
-            ctx.fill();
-            ctx.strokeStyle = '#ffffff'; // Crisp white accent border line
-            ctx.lineWidth = 2;
-            ctx.stroke();
-
-            // Run next sequential draw update cycle seamlessly
             requestAnimationFrame(engineFrameUpdateLoop);
         }
     </script>

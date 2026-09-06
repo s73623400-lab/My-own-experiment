@@ -3,110 +3,172 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Coffee Shop Simulator - Grid System</title>
+    <title>Coffee Shop Simulator - Full Interior</title>
     <style>
         body {
             background-color: #1a1a1a;
             color: white;
-            font-family: sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             text-align: center;
             margin: 0;
             padding: 20px 0;
+            user-select: none;
         }
 
         #top-ui {
             background-color: #333;
-            padding: 10px 20px;
+            padding: 10px 25px;
             display: inline-block;
             border-radius: 8px;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             font-weight: bold;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
         }
 
-        /* Main Game Canvas Board Viewport */
         #game-board {
-            width: 750px;
-            height: 400px;
+            width: 760px;
+            height: 420px;
             margin: 0 auto;
-            background-color: #262626;
+            background-color: #222;
             border: 4px solid #444;
             border-radius: 12px;
             position: relative;
             overflow: hidden;
         }
 
-        /* 1. Circle Road Asset Container (Curved road mockup on left) */
+        /* 1. Circle Road Assets Track */
         #circle-road {
             position: absolute;
-            left: -80px;
-            top: 20px;
-            width: 200px;
+            left: -90px;
+            top: 30px;
+            width: 180px;
             height: 360px;
-            border: 40px solid #555;
+            border: 35px solid #444;
             border-radius: 50%;
             border-left: none;
             border-bottom: none;
-            pointer-events: none;
         }
 
-        /* 2. Cafe Interior Grid Framework (Right panel map space) */
-        #cafe-grid {
+        /* 2. Main Shop Room Map Grid */
+        #cafe-room {
             position: absolute;
-            right: 20px;
-            top: 20px;
-            width: 500px;
-            height: 360px;
-            background-color: #2d2d2d;
-            border: 2px solid #3a3a3a;
+            right: 25px;
+            top: 25px;
+            width: 530px;
+            height: 370px;
+            background-color: #2c2c2c;
+            border: 3px solid #3a3a3a;
             border-radius: 8px;
-            display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            grid-template-rows: repeat(4, 1fr);
-            gap: 2px;
-            padding: 4px;
-            box-sizing: border-box;
+            position: relative;
         }
 
-        /* Grid Tile blocks */
-        .tile {
-            background-color: #333333;
-            border-radius: 4px;
-            position: relative;
+        /* 3. Interactive Door Component Banner */
+        #door-btn {
+            position: absolute;
+            left: 0;
+            top: 40px;
+            width: 90px;
+            padding: 8px 0;
+            color: white;
+            font-weight: bold;
+            font-size: 12px;
+            border: none;
+            border-radius: 0 6px 6px 0;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.4);
+            z-index: 20;
+            transition: background 0.2s;
+        }
+        .door-open { background-color: #007bff; }
+        .door-closed { background-color: #d32f2f; }
+
+        /* 4. The Central Counter Layout Box Divider */
+        #shop-counter {
+            position: absolute;
+            left: 200px;
+            top: 0;
+            width: 50px;
+            height: 100%;
+            background-color: #5D4037; /* Rich dark mahogany wood color */
+            border-left: 4px solid #4E3629;
+            border-right: 4px solid #4E3629;
             display: flex;
             justify-content: center;
             align-items: center;
-            cursor: pointer;
+            box-shadow: 0 0 15px rgba(0,0,0,0.5);
         }
-        .tile:hover { background-color: #3d3d3d; }
+        .counter-label {
+            writing-mode: vertical-rl;
+            text-orientation: mixed;
+            font-weight: bold;
+            font-size: 14px;
+            letter-spacing: 4px;
+            color: #d7ccc8;
+        }
 
-        /* Furniture Layout nodes */
-        .door-node { background-color: #007bff !important; color: white; font-weight: bold; font-size: 11px; }
-        .coffee-node { background-color: #b71c1c !important; } /* Red Coffee Icon base */
-        .table-node { background-color: #f57f17 !important; }  /* Yellow dining tables */
+        /* 5. Appliances Behind the Counter (Right side zone) */
+        .appliance {
+            position: absolute;
+            width: 55px;
+            height: 55px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 22px;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            border: 3px solid rgba(255,255,255,0.1);
+        }
+        #machine-node { right: 40px; top: 60px; background-color: #b71c1c; } /* Red Coffee machine box */
+        #bin-node { right: 40px; bottom: 60px; background-color: #555; }     /* Grey trash bin box */
 
-        /* Interactive character dots elements */
-        .player-token {
-            width: 20px;
-            height: 20px;
+        /* 6. Dining Tables and Chairs (Left side lounge out in front) */
+        .chair-node {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            background-color: #f57f17; /* Yellow customer dining nodes */
+            border-radius: 6px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 18px;
+            cursor: pointer;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.3);
+        }
+
+        /* 7. Entity Token Point Dots */
+        #player-token {
+            width: 22px;
+            height: 22px;
             background-color: #00ffcc;
             border: 2px solid white;
             border-radius: 50%;
             position: absolute;
+            right: 120px; /* Spawns behind the bar workspace */
+            top: 170px;
+            z-index: 30;
+            cursor: pointer;
             box-shadow: 0 0 10px #00ffcc;
-            z-index: 10;
+            transition: all 0.5s ease-out;
         }
+        .selected { transform: scale(1.2); box-shadow: 0 0 20px #00ffcc !important; }
 
-        .patron-token {
-            width: 16px;
-            height: 16px;
-            background-color: #9c27b0; /* Purple customer dot */
+        .customer-token {
+            width: 18px;
+            height: 18px;
+            background-color: #9c27b0; /* Purple customer dot asset */
+            border: 2px solid white;
             border-radius: 50%;
             position: absolute;
+            z-index: 25;
+            transition: all 1.5s linear; /* Smooth walking physics transition speed */
         }
 
         #status-bar {
             background-color: #222;
-            padding: 8px 15px;
+            padding: 8px 20px;
             border-radius: 20px;
             display: inline-block;
             font-size: 14px;
@@ -118,89 +180,100 @@
 <body>
 
     <div id="top-ui">
-        📆 Day: <span id="day-val">1</span> &nbsp;|&nbsp; 💰 Earnings: $<span id="cash-val">0</span>
+        📆 Shift Day: <span id="day-val">1</span> &nbsp;|&nbsp; 💰 Cash Register: $<span id="cash-val">0</span>
     </div>
 
     <div id="game-board">
-        <!-- Curved road layout track -->
+        <!-- Outside street track -->
         <div id="circle-road"></div>
 
-        <!-- The interactive Top-down Interior grid framework -->
-        <div id="cafe-grid">
-            <!-- Row 1 Tiles -->
-            <div class="tile door-node" onclick="interactTile('door')">Door: Open</div>
-            <div class="tile"></div>
-            <div class="tile"></div>
-            <div class="tile"></div>
-            <div class="tile coffee-node" onclick="interactTile('coffee')">☕</div>
+        <!-- The Room Enclosure box -->
+        <div id="cafe-room" onclick="movePlayer(event)">
+            
+            <!-- Door Portal Toggle Controller -->
+            <button id="door-btn" class="door-open" onclick="toggleDoor(event)">Door: Open</button>
 
-            <!-- Row 2 Tiles -->
-            <div class="tile"><div class="player-token" id="player-dot"></div></div>
-            <div class="tile"></div>
-            <div class="tile"><div class="patron-token" style="background:#e91e63;"></div></div>
-            <div class="tile"></div>
-            <div class="tile table-node" onclick="interactTile('table')">🪑</div>
+            <!-- Counter Barrier Wall -->
+            <div id="shop-counter">
+                <div class="counter-label">COUNTER DESK</div>
+            </div>
 
-            <!-- Row 3 Tiles -->
-            <div class="tile"></div>
-            <div class="tile"></div>
-            <div class="tile"><div class="patron-token" style="background:#9c27b0;"></div></div>
-            <div class="tile"></div>
-            <div class="tile table-node" onclick="interactTile('table')">🪑</div>
+            <!-- Behind Counter Appliances -->
+            <div class="appliance" id="machine-node" title="Coffee Machine" onclick="interactAsset(event, 'machine')">☕</div>
+            <div class="appliance" id="bin-node" title="Trash Bin" onclick="interactAsset(event, 'bin')">🗑️</div>
 
-            <!-- Row 4 Tiles -->
-            <div class="tile"></div>
-            <div class="tile"></div>
-            <div class="tile"></div>
-            <div class="tile"></div>
-            <div class="tile table-node" onclick="interactTile('table')">🪑</div>
+            <!-- Front Lounge Seating further out in front of the counter desk -->
+            <div class="chair-node" style="left: 40px; top: 80px;" onclick="interactAsset(event, 'chair', 1)">🪑</div>
+            <div class="chair-node" style="left: 40px; top: 165px;" onclick="interactAsset(event, 'chair', 2)">🪑</div>
+            <div class="chair-node" style="left: 40px; top: 250px;" onclick="interactAsset(event, 'chair', 3)">🪑</div>
+
+            <!-- Player Worker Token Dot -->
+            <div id="player-token" onclick="selectPlayer(event)"></div>
         </div>
     </div>
 
     <div id="status-bar">
-        Active Patrons: 3 (Ethan ordering...)
+        Welcome to the shift! Click your cyan player dot to pick them up, then click any tile node to move.
     </div>
 
     <script>
-        let dayCounter = 1;
-        let revenue = 0;
-        let machineCharged = false;
+        // Core Game Memory States
+        let currentDay = 1;
+        let money = 0;
+        let isDoorOpen = true;
+        let isPlayerPicked = false;
+        let heldItem = "Empty Hands";
+        
+        // Active tracking arrays for custom spawns
+        let customerCount = 0;
 
-        function interactTile(type) {
-            const status = document.getElementById('status-bar');
-            
-            if (type === 'door') {
-                status.innerText = "🚪 Door configuration active. Welcoming new patrons inside!";
-            } else if (type === 'coffee') {
-                machineCharged = true;
-                status.innerText = "☕ Coffee machine activated! Espresso shot extracted and ready.";
-                // Teleport player dot visually to the machine grid tile coordinate slot
-                movePlayerVisual(4); 
-            } else if (type === 'table') {
-                if (machineCharged) {
-                    revenue += 12;
-                    dayCounter += 1;
-                    
-                    document.getElementById('cash-val').innerText = revenue;
-                    document.getElementById('day-val').innerText = dayCounter;
-                    
-                    status.innerText = "🎉 Order delivered to the dining table! Advanced to Day " + dayCounter;
-                    machineCharged = false;
-                    
-                    // Return player token dot back to counter baseline slot
-                    movePlayerVisual(5);
-                } else {
-                    status.innerText = "⚠️ That table needs coffee! Hit the Red Coffee Machine tile first to brew.";
-                }
+        // Toggle the front door block system
+        function toggleDoor(event) {
+            event.stopPropagation(); // Prevent walking scripts from running on click
+            const btn = document.getElementById('door-btn');
+            isDoorOpen = !isDoorOpen;
+
+            if (isDoorOpen) {
+                btn.className = "door-open";
+                btn.innerText = "Door: Open";
+                document.getElementById('status-bar').innerText = "🔓 Door opened! Patrons will begin walking in from Circle Road.";
+            } else {
+                btn.className = "door-closed";
+                btn.innerText = "Door: Closed";
+                document.getElementById('status-bar').innerText = "🔒 Door locked! Foot traffic stopped from entering.";
             }
         }
 
-        function movePlayerVisual(tileIndex) {
-            const player = document.getElementById('player-dot');
-            const targetTile = document.getElementsByClassName('tile')[tileIndex];
-            targetTile.appendChild(player); // Snaps the player dot component cleanly into that exact grid box item
+        // Handle selecting worker dot
+        function selectPlayer(event) {
+            event.stopPropagation();
+            isPlayerPicked = true;
+            document.getElementById('player-token').classList.add('selected');
+            document.getElementById('status-bar').innerText = "Player selected! Click inside the shop grid rooms to walk over.";
         }
-    </script>
 
-</body>
-</html>
+        // Handle standard free grid coordinate walking movement logic
+        function movePlayer(event) {
+            if (!isPlayerPicked) return;
+            
+            // Extract click coordinate offsets relative to the interior map room boundaries
+            const room = document.getElementById('cafe-room').getBoundingClientRect();
+            const clickX = event.clientX - room.left;
+            const clickY = event.clientY - room.top;
+
+            const player = document.getElementById('player-token');
+            // Offset positioning values slightly so token centers right on click target
+            player.style.left = (clickX - 11) + 'px';
+            player.style.top = (clickY - 11) + 'px';
+            
+            isPlayerPicked = false;
+            player.classList.remove('selected');
+        }
+
+        // Interact with the appliances or tables
+        function interactAsset(event, type, index) {
+            event.stopPropagation();
+            if (isPlayerPicked) {
+                // If carrying a token, walk directly over to that appliance coordinates first
+                const player = document.getElementById('player-token');
+                player.style.left = (event.currentTarget.offsetLeft + 16) + 'px';

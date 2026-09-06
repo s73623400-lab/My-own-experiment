@@ -1,112 +1,189 @@
- body {
-            margin: 0;
-            padding: 0;
-            overflow: hidden;
-            background-color: #1a1a1a;
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coffee Shop Game - Map Screen</title>
+    <style>
+        body {
+            background-color: #F5EBE0;
             font-family: sans-serif;
-        }
-        #ui-overlay {
-            position: absolute;
-            top: 20px;
-            width: 100%;
             text-align: center;
-            color: white;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
-            pointer-events: none; /* Let clicks pass through to the 3D scene */
+            margin-top: 20px;
         }
-        h1 { margin: 0 0 5px 0; font-size: 28px; }
-        p { margin: 0; font-size: 16px; color: #ccc; }
+        /* Top Status Bar Styling */
+        #game-stats {
+            background-color: #6F4E37;
+            color: white;
+            padding: 10px 30px;
+            display: inline-block;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 18px;
+            margin-bottom: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        /* The main visual game board grid box */
+        #map-container {
+            width: 500px;
+            height: 350px;
+            background-color: #a3d9c9; /* Light green grass map layer */
+            position: relative;
+            margin: 0 auto;
+            border: 5px solid #4A3728;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+        }
+        /* Visual asset for Circle Road passing along the map side */
+        .road {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 80px;
+            background-color: #555555;
+            border-top: 4px dashed white;
+        }
+        .road-label {
+            color: white;
+            font-weight: bold;
+            letter-spacing: 3px;
+            line-height: 80px;
+            margin: 0;
+        }
+        /* The Coffee Shop Building structure hitbox */
+        #coffee-shop-building {
+            position: absolute;
+            top: 40px;
+            left: 175px;
+            width: 150px;
+            height: 120px;
+            background-color: #d7ccc8;
+            border: 4px solid #5d4037;
+            border-radius: 8px;
+            cursor: pointer;
+            box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+        }
+        .shop-sign {
+            background-color: #d32f2f;
+            color: white;
+            font-weight: bold;
+            font-size: 12px;
+            padding: 4px;
+            display: block;
+            border-bottom: 3px solid #5d4037;
+        }
+        /* The interactable player element dot */
+        #player-dot {
+            width: 24px;
+            height: 24px;
+            background-color: #007bff; /* Vibrant player blue */
+            border: 3px solid white;
+            border-radius: 50%;
+            position: absolute;
+            bottom: 25px;
+            left: 30px;
+            cursor: pointer;
+            transition: all 0.8s ease-in-out; /* Handles smooth walking movement */
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+        .selected {
+            background-color: #00ffcc !important; /* Glow target outline */
+            box-shadow: 0 0 15px #00ffcc;
+        }
+        /* Prompt box instructions display */
+        #game-alert {
+            margin-top: 15px;
+            font-size: 16px;
+            font-weight: bold;
+            color: #4A3728;
+            min-height: 24px;
+        }
     </style>
-    <!-- We load the Three.js library directly from a trusted web delivery network (CDN) -->
-    <script src="https://cloudflare.com"></script>
 </head>
 <body>
 
-    <!-- Simple UI text sitting on top of our 3D canvas viewport -->
-    <div id="ui-overlay">
-        <h1>Circle Road</h1>
-        <p>3D Coffee Shop Map Environment</p>
+    <!-- 1. Day Tracker and score elements -->
+    <div id="game-stats">
+        📆 <span id="day-display">Day 1</span> &nbsp;|&nbsp; ☕ Orders Filled: <span id="order-display">0</span>
     </div>
 
+    <!-- 2. The physical scene map board canvas -->
+    <div id="map-container">
+        
+        <!-- The Coffee Shop Goal Hitbox -->
+        <div id="coffee-shop-building" onclick="walkToShop()">
+            <span class="shop-sign">☕ CAFE STOREFRONT</span>
+            <div style="width: 30px; height: 50px; background-color: #4E3629; margin: 30px auto 0 auto; border-radius: 3px 3px 0 0;"></div>
+        </div>
+
+        <!-- Circle Road backdrop decoration -->
+        <div class="road">
+            <p class="road-label">CIRCLE ROAD</p>
+        </div>
+
+        <!-- The interactive player token point dot asset -->
+        <div id="player-dot" onclick="selectPlayer(event)"></div>
+
+    </div>
+
+    <!-- Gameplay text feedback prompt box -->
+    <div id="game-alert">First shift started! Click your blue character dot to select them.</div>
+
     <script>
-        // --- 1. SETUP THE ENGINE ---
-        const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0xa0d2eb); // Soft blue sky color
+        // Set game memory state values
+        let currentDay = 1;
+        let ordersFilled = 0;
+        let isPlayerSelected = false;
+        let hasArrivedAtShop = false;
 
-        // Setup a perspective camera (Field of View, Aspect Ratio, Near plane, Far plane)
-        const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
-        camera.position.set(0, 8, 12); // Position camera high up and back to look down at the map
-        camera.lookAt(0, 1, 0); // Point the camera eye directly at the coffee shop
-
-        const renderer = new THREE.WebGLRenderer({ antialias: true });
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.shadowMap.enabled = true; // Enable realistic shadow maps
-        document.body.appendChild(renderer.domElement);
-
-        // --- 2. ADD REALISTIC LIGHTING ---
-        const ambientLight = new THREE.AmbientLight(0xffffff, 0.6); // Soft overall environment light
-        scene.add(ambientLight);
-
-        const sunLight = new THREE.DirectionalLight(0xfffaed, 0.8); // Warm sun light casting shadows
-        sunLight.position.set(10, 20, 10);
-        sunLight.castShadow = true;
-        scene.add(sunLight);
-
-        // --- 3. BUILD THE MAP GEOMETRY (The Assets) ---
-
-        // The Grass Field
-        const grassGeo = new THREE.PlaneGeometry(30, 30);
-        const grassMat = new THREE.MeshLambertMaterial({ color: 0x76c764 });
-        const grass = new THREE.Mesh(grassGeo, grassMat);
-        grass.rotation.x = -Math.PI / 2; // Flat on the floor
-        grass.receiveShadow = true;
-        scene.add(grass);
-
-        // Circle Road (A dark grey ring surrounding the shop)
-        const roadGeo = new THREE.RingGeometry(5, 7, 32);
-        const roadMat = new THREE.MeshLambertMaterial({ color: 0x444444, side: THREE.DoubleSide });
-        const road = new THREE.Mesh(roadGeo, roadMat);
-        road.rotation.x = -Math.PI / 2;
-        road.position.y = 0.01; // Lift slightly above grass to prevent texture flickering
-        road.receiveShadow = true;
-        scene.add(road);
-
-        // The Coffee Shop Building Box (Width, Height, Depth)
-        const shopGeo = new THREE.BoxGeometry(3, 2.5, 3);
-        const shopMat = new THREE.MeshLambertMaterial({ color: 0xd7ccc8 }); // Warm brick tone
-        const shop = new THREE.Mesh(shopGeo, shopMat);
-        shop.position.set(0, 1.25, 0); // Ground sits at y=0, so lift by half its height
-        shop.castShadow = true;
-        shop.receiveShadow = true;
-        scene.add(shop);
-
-        // Cozy Red Roof (A 3D cone shape acting as a building roof)
-        const roofGeo = new THREE.ConeGeometry(2.5, 1.5, 4);
-        const roofMat = new THREE.MeshLambertMaterial({ color: 0xd32f2f }); // Classic red roof
-        const roof = new THREE.Mesh(roofGeo, roofMat);
-        roof.position.set(0, 3.1, 0);
-        roof.rotation.y = Math.PI / 4; // Align square corners with the building box
-        roof.castShadow = true;
-        scene.add(roof);
-
-        // --- 4. GAME RENDERING LOOP ---
-        function animate() {
-            requestAnimationFrame(animate);
-
-            // Gently rotate the whole map so you can view it seamlessly from all 3D angles
-            scene.rotation.y += 0.003; 
-
-            renderer.render(scene, camera);
+        // Step A: Handle selecting your blue player character icon
+        function selectPlayer(event) {
+            event.stopPropagation(); // Stop click bleeding into the map field
+            isPlayerSelected = true;
+            document.getElementById('player-dot').classList.add('selected');
+            document.getElementById('game-alert').innerText = "Character ready! Now click the Coffee Shop building to walk over.";
         }
-        animate();
 
-        // Handle browser window resizing automatically
-        window.addEventListener('resize', onWindowResize, false);
-        function onWindowResize() {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
+        // Step B: Move the character to the shop coordinates and process shifting state values
+        function walkToShop() {
+            if (!isPlayerSelected) {
+                document.getElementById('game-alert').innerText = "⚠️ Select your blue player dot first before moving!";
+                return;
+            }
+
+            const player = document.getElementById('player-dot');
+            const alertText = document.getElementById('game-alert');
+
+            // Animate moving the coordinate dot up to the cafe doorway
+            player.style.left = '238px';
+            player.style.bottom = '180px';
+            
+            alertText.innerText = "🚶 Walking to counter... Processing coffee order recipe!";
+
+            // Process order state calculation hooks after movement animation finishes (0.8s)
+            setTimeout(function() {
+                ordersFilled += 1;
+                currentDay += 1; // Progress game to next day automatically upon layout arrival
+
+                // Re-render display labels on top stats element
+                document.getElementById('order-display').innerText = ordersFilled;
+                document.getElementById('day-display').innerText = "Day " + currentDay;
+                
+                alertText.innerText = "☕ Order completed successfully! Welcome to Day " + currentDay + ". Resetting position.";
+                
+                // Automatically return player character dot back to spawn lane on Circle Road for next cycle
+                setTimeout(function() {
+                    player.classList.remove('selected');
+                    player.style.left = '30px';
+                    player.style.bottom = '25px';
+                    isPlayerSelected = false;
+                }, 1500);
+
+            }, 800);
         }
     </script>
+
 </body>
 </html>

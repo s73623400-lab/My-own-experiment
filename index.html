@@ -3,90 +3,306 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Coffee Shop</title>
+    <title>Interactive Coffee Shop Game</title>
     <style>
-        /* This sets your neat, warm coffee background color */
         body {
-            background-color: #D2B48C; 
             margin: 0;
-            padding: 40px 20px;
+            padding: 10px;
+            background-color: #232731;
+            color: #ffffff;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            color: #2c1d11; /* Dark coffee brown text */
             display: flex;
-            flex-direction: column;
-            align-items: center; /* Centers everything horizontally */
             justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            box-sizing: border-box;
+            user-select: none;
         }
 
-        /* Clean wrapper to keep everything perfectly neat and stacked */
-        .menu-container {
-            text-align: center;
-            max-width: 500px;
-            width: 100%;
-            background: rgba(255, 255, 255, 0.4); /* Subtle glass panel effect */
-            padding: 30px;
+        /* 👑 EXPANDED FULLSCREEN GAME AREA OVERHAUL */
+        #game-container {
+            width: 98vw; /* Takes up almost the entire width of your screen */
+            max-width: 1400px;
+            background-color: #1e222b;
+            border: 2px solid #4b5563;
             border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            margin-bottom: 20px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            position: relative;
+            box-sizing: border-box;
         }
 
-        /* Styling buttons to make them look clickable and professional */
-        button {
-            background-color: #5c3a21;
+        /* 🗺️ REMOVED YELLOW OUTLINES & EXPANDED FLOOR SIZE */
+        #game-floor-map {
+            position: relative;
+            width: 100%;
+            height: 520px; /* Taller, bigger map arena */
+            background-color: #0f1115;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 20px;
+            box-sizing: border-box;
+            cursor: crosshair;
+        }
+
+        /* 🛒 HIGH PRIORITIZED BUTTONS (FIXES THE RED ZONES CLICK BUG) */
+        #shop-btn {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            background-color: #ff9f0a;
+            color: #000000;
+            border: none;
+            padding: 10px 20px;
+            font-size: 14px;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+            z-index: 40; /* Placed cleanly on top of all invisible layers */
+        }
+
+        .appliance-shelf {
+            position: absolute;
+            top: 15px;
+            right: 25px;
+            left: 160px;
+            display: flex;
+            justify-content: space-around;
+            z-index: 30;
+        }
+        .appliance {
+            background-color: #2e3440;
+            border: 2px solid #81a1c1;
+            color: #e5e9f0;
+            padding: 10px 18px;
+            font-size: 13px;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        /* THE BARISTA WORK STATION COUNTER */
+        #barista-counter {
+            position: absolute;
+            top: 200px;
+            left: 0;
+            width: 100%;
+            height: 45px;
+            background-color: #3b4252;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 5;
+        }
+        .counter-label-text {
+            color: rgba(255, 255, 255, 0.4);
+            font-size: 13px;
+            font-weight: bold;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+        #register-box {
+            position: absolute;
+            left: 45px;
+            top: -8px;
+            width: 25px;
+            height: 8px;
+            background-color: #ff3b30;
+            border-radius: 2px;
+        }
+
+        #shop-doorway {
+            position: absolute;
+            bottom: 0;
+            right: 80px;
+            width: 110px;
+            height: 18px;
+            background-color: #30d158;
+            color: black;
+            font-size: 11px;
+            text-align: center;
+            font-weight: bold;
+            line-height: 18px;
+            z-index: 30;
+            cursor: pointer;
+            border-radius: 4px 4px 0 0;
+        }
+        #shop-doorway.closed { background-color: #ff3b30; color: white; }
+
+        /* CHARACTER GAME TOKENS LAYERING */
+        .token {
+            position: absolute;
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+            color: white;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.4);
+            box-sizing: border-box;
+            z-index: 20;
+            transition: left 0.15s ease-out, top 0.15s ease-out; /* Makes player dot slide smoothly */
+        }
+
+        #player-barista {
+            background-color: #2563eb;
+            border: 2px solid #ffffff;
+            left: 700px;
+            top: 100px;
+        }
+
+        .customer-dot { border: 2px solid transparent; }
+        .customer-dot.first-in-line { border-color: #ffffff; animation: pulsingBorder 1.5s infinite; }
+
+        @keyframes pulsingBorder {
+            0% { border-color: #ffffff; }
+            50% { border-color: #ff9f0a; }
+            100% { border-color: #ffffff; }
+        }
+
+        .dialogue-bubble {
+            position: absolute;
+            background: #ffffff;
+            color: #000000;
+            font-size: 11px;
+            font-weight: bold;
+            padding: 5px 10px;
+            border-radius: 6px;
+            bottom: 48px;
+            white-space: nowrap;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+
+        /* BOTTOM WORKSPACE CONTROLS STRIP */
+        #control-panel {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            gap: 15px;
+        }
+        .game-btn {
+            flex: 1;
+            background-color: #2563eb;
             color: white;
             border: none;
-            padding: 12px 24px;
-            font-size: 16px;
+            padding: 16px 20px;
+            font-size: 15px;
             font-weight: bold;
             border-radius: 8px;
             cursor: pointer;
-            transition: transform 0.1s, background-color 0.2s;
-            margin: 10px 0;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            z-index: 40;
         }
-
-        button:hover {
-            background-color: #422815;
-            transform: scale(1.02);
+        .game-btn:disabled { 
+            background-color: #374151; 
+            color: #6b7280; 
+            cursor: not-allowed; 
+            box-shadow: none; 
         }
+        #door-toggle-btn { background-color: #30d158; color: black; }
+        #door-toggle-btn.is-closed { background-color: #ff3b30; color: white; }
 
-        .fade-text {
-            cursor: pointer;
-            font-weight: 500;
-            margin-top: 15px;
-            transition: opacity 1s;
+        #hud-dashboard {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            border-top: 2px solid #4b5563;
+            padding-top: 15px;
+            text-align: center;
+        }
+        .hud-box .title { color: #9ca3af; font-size: 14px; margin-bottom: 4px; }
+        .hud-box .stat { font-size: 22px; font-weight: bold; color: #ffffff; }
+
+        /* BRINGING BACK THE INTERACTIVE POS TABLET DIALOGUE MODAL */
+        .overlay-card {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            border-radius: 16px;
+            display: none;
+            z-index: 100; /* Locks overlay apps squarely on top */
+            box-shadow: 0 25px 50px rgba(0,0,0,0.7);
+            box-sizing: border-box;
+        }
+        #tablet-overlay {
+            background-color: #1e222b;
+            border: 3px solid #2563eb;
+            width: 440px;
+            padding: 24px;
+        }
+        #tablet-overlay h3 { margin-top: 0; color: #2563eb; }
+        .recipe-book-helper { margin: 15px 0; font-size: 13px; line-height: 1.6; color: #9ca3af; }
+
+        #phone-overlay {
+            background-color: #000000;
+            border: 4px solid #4b5563;
+            width: 270px;
+            height: 420px;
+            padding: 15px;
+        }
+        .phone-display {
+            background-color: #1c1c1e;
+            height: 100%;
+            border-radius: 12px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            box-sizing: border-box;
+        }
+        #shop-overlay {
+            background-color: #1e222b;
+            border: 2px solid #ff9f0a;
+            width: 400px;
+            padding: 20px;
+        }
+        .shop-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #282e3d;
+            padding: 12px;
+            border-radius: 8px;
+            margin-top: 12px;
         }
     </style>
 </head>
 <body>
 
-    <!-- 1. The Welcome and Initial Start Menu Screen -->
-    <div id="start-menu" class="menu-container">
-        <!-- Clicking this title hides it cleanly -->
-        <h1 style="cursor: pointer;" onclick="this.style.display = 'none';">
-            Welcome to the Coffee Shop
-        </h1>
+    <div id="game-container">
+        <!-- Expanded Fullscreen Ground Matrix Floor Area Layout Area -->
+        <div id="game-floor-map" onclick="handleFloorClick(event)">
+            
+            <button id="shop-btn" onclick="openShop(true); event.stopPropagation();">SHOP [🛒]</button>
 
-        <h2>Begin Shift!</h2>
-        
-        <!-- Clicking this switches the view to the Outside Scene layout -->
-        <button onclick="document.getElementById('start-menu').style.display = 'none'; document.getElementById('outside-scene').style.display = 'block';">
-            Walk Inside and start your shift 🚪
-        </button>
-    </div>
+            <div class="appliance-shelf">
+                <div class="appliance" onclick="event.stopPropagation();">Espresso Station</div>
+                <div class="appliance" onclick="event.stopPropagation();">Tea Infuser</div>
+                <div class="appliance" onclick="event.stopPropagation();">Pastry Oven</div>
+            </div>
 
-    <!-- 2. The Interactive Outside Scene (Hidden until the button above is pressed) -->
-    <div id="outside-scene" class="menu-container" style="display: none;">
-        <h2>🏡 Outside the Coffee Shop</h2>
-        <p>The morning sun is shining on your small, cosy cafe. It is time to open up!</p>
-        
-        <!-- This button triggers your local interactive map.html game file -->
-        <button onclick="window.location.href='map.html';">Click to begin game!</button> 
-    </div>
+            <div id="barista-counter">
+                <div id="register-box"></div>
+                <div class="counter-label-text">Counter Bar</div>
+            </div>
 
-    <!-- Clicking this text makes it fade away instantly -->
-    <p class="fade-text" onclick="this.style.opacity = '0';">
-        📍 Circle Road (Click to clear location)
-    </p>
+            <div id="character-layer">
+                <div id="player-barista" class="token">You</div>
+            </div>
 
-</body>
-</html>
+            <div id="shop-doorway" onclick="toggleStoreDoor(); event.stopPropagation();">Door Open</div>
+        </div>
+
+        <div id="control-panel">
+            <button id="door-toggle-btn" class="game-btn" onclick="toggleStoreDoor()">Shop Door: OPEN</button>
+            <button id="serve-customer-btn" class="game-btn" onclick="triggerPOSOpen()" disabled>Walk left behind counter to Serve</button>
+        </div>
+
+        <div id="hud-dashboard">
+            <div class="hud-box">
+                <div class="title">Earnings</div>
+                <div id="hud-cash" class="stat" style="color: #30d158;">$0.00</div>
+            </div>

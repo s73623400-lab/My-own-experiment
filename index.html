@@ -14,7 +14,7 @@
 
         body {
             background: #000000;
-            color: #ffffff;
+            color: #b91c1c;
             height: 100vh;
             display: flex;
             align-items: center;
@@ -24,17 +24,19 @@
             position: relative;
         }
 
-        /* Horror Smiley Face in the Top Right */
-        .horror-smile {
+        /* Horror Creepy Smiley Face Element */
+        .horror-face {
             position: absolute;
-            top: 5%;
-            right: 5%;
-            width: 250px;
-            height: 250px;
-            transform: rotate(15deg);
-            opacity: 0.85;
-            pointer-events: none;
-            filter: drop-shadow(0 0 15px rgba(220, 38, 38, 0.4));
+            top: 40px;
+            right: 60px;
+            font-size: 8rem;
+            color: #b91c1c;
+            font-weight: bold;
+            letter-spacing: -10px;
+            transform: rotate(25deg);
+            opacity: 0.7;
+            user-select: none;
+            text-shadow: 0 0 20px rgba(185, 28, 28, 0.6);
         }
 
         .menu-container {
@@ -51,10 +53,9 @@
             font-weight: 900;
             text-transform: uppercase;
             letter-spacing: 3px;
-            color: #dc2626;
-            text-shadow: 0 0 10px rgba(220, 38, 38, 0.6);
+            color: #b91c1c;
+            text-shadow: 0 0 15px rgba(185, 28, 28, 0.5);
             margin-bottom: 1rem;
-            line-height: 1.1;
         }
 
         .menu-screen {
@@ -63,128 +64,92 @@
             gap: 1rem;
         }
 
-        /* Class used to hide screens dynamically via JS */
         .hidden {
             display: none !important;
         }
 
+        /* Essential Interactive Button Styling */
         .menu-btn {
-            background: rgba(15, 15, 15, 0.9);
-            border: 2px solid #262626;
-            color: #d4d4d8;
-            padding: 1.1rem 2rem;
+            background: rgba(15, 0, 0, 0.8);
+            border: 2px solid #450a0a;
+            color: #b91c1c;
+            padding: 1.2rem 2rem;
             font-size: 1.3rem;
             font-weight: bold;
             text-align: left;
             border-radius: 4px;
-            cursor: pointer;
-            transition: all 0.25s ease;
+            cursor: pointer; /* Makes cursor change to a pointer hand when hovering */
+            transition: all 0.2s ease;
             width: 100%;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            letter-spacing: 1px;
+            text-transform: uppercase;
         }
 
+        /* Hover response glow */
         .menu-btn:hover:not(:disabled) {
-            background: #dc2626;
+            background: #b91c1c;
             color: #000000;
-            border-color: #dc2626;
-            transform: translateX(12px);
-            box-shadow: -5px 0 15px rgba(220, 38, 38, 0.5);
+            border-color: #b91c1c;
+            transform: translateX(8px);
+            box-shadow: 0 0 25px rgba(185, 28, 28, 0.6);
         }
 
         .menu-btn:disabled {
             opacity: 0.15;
             cursor: not-allowed;
-            border-color: #171717;
+            border-color: #1a0505;
         }
 
         .slot-status {
             font-size: 0.85rem;
-            font-weight: normal;
             opacity: 0.7;
-            text-transform: uppercase;
         }
 
         .back-btn {
-            border-color: #404040;
-            color: #a3a3a3;
-            margin-top: 0.5rem;
+            border-color: #444;
+            color: #666;
+            margin-top: 1rem;
         }
 
         .back-btn:hover {
-            background: #404040 !important;
-            color: #ffffff !important;
-            border-color: #404040 !important;
-        }
-        
-        .screen-title {
-            font-size: 1.2rem; 
-            margin-bottom: 0.5rem; 
-            color: #737373;
-            text-transform: uppercase;
-            letter-spacing: 1px;
+            background: #333 !important;
+            color: #fff !important;
+            border-color: #fff !important;
         }
     </style>
 </head>
 <body>
 
-    <!-- Horror Smiley Face SVG -->
-    <svg class="horror-smile" viewBox="0 0 200 200" xmlns="http://w3.org">
-        <!-- Hollow, bleeding eyes -->
-        <path d="M 50 65 Q 55 45 70 60 Q 60 85 50 65 Z" fill="#dc2626" />
-        <path d="M 50 65 L 48 95 L 54 90 Z" fill="#dc2626" opacity="0.7"/> 
-        
-        <path d="M 150 65 Q 145 45 130 60 Q 140 85 150 65 Z" fill="#dc2626" />
-        <path d="M 150 65 L 152 95 L 146 90 Z" fill="#dc2626" opacity="0.7"/>
-        
-        <!-- Wide, stitched/creepy smile -->
-        <path d="M 35 110 Q 100 175 165 110 Q 100 145 35 110 Z" fill="#dc2626" />
-        <!-- Jagged teeth details inside the smile -->
-        <path d="M 45 115 L 55 125 L 65 118 L 75 130 L 90 120 L 105 132 L 120 121 L 135 129 L 145 118 L 155 123" stroke="#000000" stroke-width="2" fill="none" />
-    </svg>
+    <div class="horror-face">👁️👃👁️<br>&nbsp;&nbsp;👅</div>
 
     <div class="menu-container">
-        <!-- Game Title -->
-        <h1 class="game-title">The Hollow<br>Cafe</h1>
+        <h1 class="game-title">The Hollow Cafe</h1>
         
-        <!-- MAIN SCREEN -->
+        <!-- Main Screen: Using actual clickable <button> entities -->
         <div id="mainScreen" class="menu-screen">
             <button id="mainNewGameBtn" class="menu-btn">New Game</button>
             <button id="mainContinueBtn" class="menu-btn">Continue</button>
         </div>
 
-        <!-- SLOT SCREEN (Triggered by clicking New Game or Continue) -->
-        <!-- 1. The HTML Button Structure -->
-<button id="New Game">Click Me</button>
-
-<script>
-  // 2. Target the button using its ID
-  const btn = document.getElementById('New Game');
-
-  // 3. Add the click event listener
-  btn.addEventListener('click', () => {
-      
-  });
-</script>
+        <!-- 5 Slots Screen hidden until mainNewGameBtn is clicked -->
         <div id="slotScreen" class="menu-screen hidden">
-            <h2 id="slotScreenTitle" class="screen-title">Select a Slot</h2>
+            <h2 id="slotScreenTitle" style="font-size: 1.2rem; margin-bottom: 0.5rem; color: #7f1d1d;">SELECT TARGET FILES</h2>
             
-            <!-- The 5 Game Slots -->
             <button class="menu-btn slot-btn" data-slot="1">New Game <span class="slot-status"></span></button>
             <button class="menu-btn slot-btn" data-slot="2">New Game <span class="slot-status"></span></button>
             <button class="menu-btn slot-btn" data-slot="3">New Game <span class="slot-status"></span></button>
             <button class="menu-btn slot-btn" data-slot="4">New Game <span class="slot-status"></span></button>
             <button class="menu-btn slot-btn" data-slot="5">New Game <span class="slot-status"></span></button>
             
-            <button id="backBtn" class="menu-btn back-btn">← Back</button>
+            <button id="backBtn" class="menu-btn back-btn">← RETURN</button>
         </div>
     </div>
 
     <script>
         const SAVE_PREFIX = 'hollow_cafe_slot_';
-        let currentMode = ''; // Will be 'new' or 'continue'
+        let currentMode = ''; 
 
         document.addEventListener('DOMContentLoaded', () => {
             const mainScreen = document.getElementById('mainScreen');
@@ -196,7 +161,6 @@
             const backBtn = document.getElementById('backBtn');
             const slotButtons = document.querySelectorAll('.slot-btn');
 
-            // Evaluates all slots to decide if the main "Continue" button should be active
             function refreshMainMenu() {
                 let hasAnySave = false;
                 for (let i = 1; i <= 5; i++) {
@@ -208,10 +172,9 @@
                 mainContinueBtn.disabled = !hasAnySave;
             }
 
-            // Updates text labels and availability for the 5 interactive slots
             function setupSlotButtons(mode) {
                 currentMode = mode;
-                slotScreenTitle.textContent = mode === 'new' ? 'Select a slot to start:' : 'Select progress to load:';
+                slotScreenTitle.textContent = mode === 'new' ? 'CHOOSE A SLOT TO OVERWRITE:' : 'LOAD ACTIVE ENTRY:';
 
                 slotButtons.forEach(btn => {
                     const slotId = btn.getAttribute('data-slot');
@@ -219,37 +182,37 @@
 
                     if (savedData) {
                         const data = JSON.parse(savedData);
-                        btn.innerHTML = `Profile ${slotId} <span class="slot-status">Day ${data.day} (Saved)</span>`;
-                        btn.disabled = false; // Accessible to overwrite (New Game) or boot up (Continue)
+                        btn.innerHTML = `Profile ${slotId} <span class="slot-status">Day ${data.day} (Active)</span>`;
+                        btn.disabled = false; 
                     } else {
-                        // If empty, always displays "New Game" text as requested
-                        btn.innerHTML = `New Game <span class="slot-status">[Empty Slot]</span>`;
-                        // Block clicking this slot if trying to Continue a game that doesn't exist
-                        btn.disabled = (mode === 'continue');
+                        btn.innerHTML = `New Game <span class="slot-status">[Empty]</span>`;
+                        btn.disabled = (mode === 'continue'); 
                     }
                 });
             }
 
-            // Click Handlers for Main Buttons (Transitions screens instantly)
+            // Click listener linking Main New Game Button to Slot view
             mainNewGameBtn.addEventListener('click', () => {
                 mainScreen.classList.add('hidden');
                 slotScreen.classList.remove('hidden');
                 setupSlotButtons('new');
             });
 
+            // Click listener linking Main Continue Button to Slot view
             mainContinueBtn.addEventListener('click', () => {
                 mainScreen.classList.add('hidden');
                 slotScreen.classList.remove('hidden');
                 setupSlotButtons('continue');
             });
 
+            // Click listener returning user backward to Home Screen
             backBtn.addEventListener('click', () => {
                 slotScreen.classList.add('hidden');
                 mainScreen.classList.remove('hidden');
                 refreshMainMenu();
             });
 
-            // Click Handlers for the 5 interactive Game Slots
+            // Click listener logic handling slot assignments
             slotButtons.forEach(btn => {
                 btn.addEventListener('click', () => {
                     const slotId = btn.getAttribute('data-slot');
@@ -258,17 +221,30 @@
 
                     if (currentMode === 'new') {
                         if (existingSave) {
-                            const overwrite = confirm(`Warning: Profile slot ${slotId} has existing data. Wiping progress to start fresh?`);
+                            const overwrite = confirm(`Warning: Data exists in Slot ${slotId}. Overwrite progress?`);
                             if (!overwrite) return;
                         }
 
-                        // Generate a blank profile save template
                         const newGameData = {
                             day: 1,
-                            inventory: [],
-                            timestamp: new Date().toLocaleDateString()
+                            time: new Date().toLocaleDateString()
                         };
                         localStorage.setItem(slotKey, JSON.stringify(newGameData));
-                        alert(`Creating Profile ${slotId}... Welcome to The Hollow Cafe.`);
-                        // window.location.href = 'game.html?slot=' + slotId;
+                        alert(`Starting New Game in Slot ${slotId}... entering the Cafe.`);
+                        
+                    } else if (currentMode === 'continue' && existingSave) {
+                        const data = JSON.parse(existingSave);
+                        alert(`Resuming Slot ${slotId} on Day ${data.day}...`);
+                    }
+                    
+                    slotScreen.classList.add('hidden');
+                    mainScreen.classList.remove('hidden');
+                    refreshMainMenu();
+                });
+            });
 
+            refreshMainMenu();
+        });
+    </script>
+</body>
+</html>

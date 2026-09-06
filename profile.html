@@ -69,10 +69,9 @@
             border-color: #2563eb;
         }
 
-        /* 🗓️ FADED GHOST TEXT STYLE SPECIFICATION */
         .faded-hint-text {
             font-size: 13px;
-            color: rgba(156, 163, 175, 0.35); /* Deeply muted transparency */
+            color: rgba(156, 163, 175, 0.35);
             font-style: italic;
             margin-top: 2px;
         }
@@ -95,7 +94,41 @@
             background-color: #1d4ed8;
         }
 
-        /* Generated Badge Output Section */
+        /* 🔒 THE DYNAMIC CONTINUATION BUTTON */
+        .btn-continue {
+            width: 100%;
+            background-color: rgba(255, 159, 10, 0.15); /* Intentionally faded background */
+            color: rgba(243, 244, 246, 0.25);          /* Faded gray text */
+            border: 1px dashed rgba(255, 159, 10, 0.3);
+            padding: 14px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 8px;
+            margin-top: 15px;
+            box-sizing: border-box;
+            text-align: center;
+            
+            /* Disabled default states */
+            cursor: not-allowed;
+            pointer-events: none; 
+            transition: all 0.3s ease-in-out;
+        }
+
+        /* ✨ UNLOCKED STATE ACCENTS */
+        .btn-continue.unlocked {
+            background-color: #ff9f0a !important;
+            color: #000000 !important;
+            border: none !important;
+            cursor: pointer !important;
+            pointer-events: auto !important; /* Grants processing rights back to cursor */
+            box-shadow: 0 4px 14px rgba(255, 159, 10, 0.4);
+        }
+
+        .btn-continue.unlocked:hover {
+            background-color: #e08b04 !important;
+            transform: scale(1.01);
+        }
+
         #badge-output {
             margin-top: 25px;
             background-color: #12141c;
@@ -111,33 +144,35 @@
     <div class="registry-card">
         <h2>Shift Registry File</h2>
         
-        <!-- Input Block 1: Barista Name -->
         <div class="form-group">
             <label for="username">Staff Name:</label>
             <input type="text" id="username" placeholder="E.g. Zack" autocomplete="off">
         </div>
 
-        <!-- Input Block 2: Place of Birth -->
         <div class="form-group">
             <label for="birthplace">Place of Birth:</label>
             <input type="text" id="birthplace" placeholder="E.g. London" autocomplete="off">
         </div>
 
-        <!-- Input Block 3: Random Faded Timestamp System Hint -->
         <div class="form-group">
             <label>Registry Time Metric:</label>
-            <div id="dynamic-date" class="faded-hint-text">System calculated DOB placeholder...</div>
+            <div id="dynamic-date" class="faded-hint-text">System calculating DOB placeholder...</div>
         </div>
 
-        <!-- Input Block 4: Coffee Branding Custom Input -->
         <div class="form-group">
             <label for="coffeename">Coffee Name Alias:</label>
             <input type="text" id="coffeename" placeholder="E.g. Espresso King" autocomplete="off">
         </div>
 
+        <!-- Lock Button -->
         <button class="btn-submit" onclick="generateStaffBadge()">Lock File & Start Shift</button>
 
-        <!-- Dynamic Output Receipt Box -->
+        <!-- 🎯 FADED CONTINUE TRIGGER ELEMENT -->
+        <div id="continue-link-btn" class="btn-continue" onclick="advanceToGameFloor()">
+            Continue ➔
+        </div>
+
+        <!-- Receipt Feedback Console Area -->
         <div id="badge-output">
             <span style="color:#ff9f0a; font-weight:bold; font-size:12px; text-transform:uppercase;">Verified Profile Locked:</span>
             <p style="margin: 8px 0 4px 0; font-size:15px;" id="output-line-1"></p>
@@ -146,7 +181,6 @@
     </div>
 
     <script>
-        // Generate a random retro birthday stamp to display inside the ghost font text container
         function generateRandomDOB() {
             const startYear = 1985;
             const endYear = 2005;
@@ -154,36 +188,37 @@
             const randomMonth = Math.floor(Math.random() * 12) + 1;
             const randomDay = Math.floor(Math.random() * 28) + 1;
             
-            // Format string nicely with padding zeroes
             const formattedDate = `${randomDay.toString().padStart(2, '0')}/${randomMonth.toString().padStart(2, '0')}/${randomYear}`;
             document.getElementById('dynamic-date').innerText = `DOB Auto-Generated: ${formattedDate} (Faded Verification Token)`;
         }
 
-        // Action workflow script to save parameters
         function generateStaffBadge() {
-            const name = document.getElementById('username').value.trim() || "Zack";
-            const place = document.getElementById('birthplace').value.trim() || "Circle Road Sector";
-            const coffeeAlias = document.getElementById('coffeename').value.trim() || "Mocha Barista";
+            const name = document.getElementById('username').value.trim();
+            const place = document.getElementById('birthplace').value.trim();
+            const coffeeAlias = document.getElementById('coffeename').value.trim();
+
+            // Validation: Stop execution if fields are completely untouched or empty strings
+            if (!name || !place || !coffeeAlias) {
+                alert("🔒 Access Denied: You must complete Staff Name, Place of Birth, and Coffee Name entries before locking profiles.");
+                return;
+            }
 
             const outputBox = document.getElementById('badge-output');
-            const line1 = document.getElementById('output-line-1');
-            const line2 = document.getElementById('output-line-2');
-
-            // Format feedback strings
-            line1.innerHTML = `Welcome to the grid, <strong>${name}</strong> [Alias: <em>${coffeeAlias}</em>]`;
-            line2.innerHTML = `📍 Origin Verified: ${place} | Security clearance approved.`;
-            
+            document.getElementById('output-line-1').innerHTML = `Welcome to the grid, <strong>${name}</strong> [Alias: <em>${coffeeAlias}</em>]`;
+            document.getElementById('output-line-2').innerHTML = `📍 Origin Verified: ${place} | Security clearance approved.`;
             outputBox.style.display = 'block';
 
-            // Optional integration step hook: Redirect to game screen after 2.5 seconds
-            /* 
-            setTimeout(() => {
-                window.location.href = 'map.html';
-            }, 2500); 
-            */
+            // 🔓 REVEAL & ACTIVATE THE CONTINUE SELECTION CARD
+            const continueBtn = document.getElementById('continue-link-btn');
+            continueBtn.classList.add('unlocked');
+            continueBtn.innerText = "Continue to Game Floor ➔";
         }
 
-        // Initialize random ghost parameters instantly on page load execution
+        // REDIRECT ACTION ROUTINE TO START WORK MAPS
+        function advanceToGameFloor() {
+            window.location.href = 'map.html';
+        }
+
         generateRandomDOB();
     </script>
 </body>

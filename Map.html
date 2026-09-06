@@ -1,0 +1,112 @@
+ body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background-color: #1a1a1a;
+            font-family: sans-serif;
+        }
+        #ui-overlay {
+            position: absolute;
+            top: 20px;
+            width: 100%;
+            text-align: center;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+            pointer-events: none; /* Let clicks pass through to the 3D scene */
+        }
+        h1 { margin: 0 0 5px 0; font-size: 28px; }
+        p { margin: 0; font-size: 16px; color: #ccc; }
+    </style>
+    <!-- We load the Three.js library directly from a trusted web delivery network (CDN) -->
+    <script src="https://cloudflare.com"></script>
+</head>
+<body>
+
+    <!-- Simple UI text sitting on top of our 3D canvas viewport -->
+    <div id="ui-overlay">
+        <h1>Circle Road</h1>
+        <p>3D Coffee Shop Map Environment</p>
+    </div>
+
+    <script>
+        // --- 1. SETUP THE ENGINE ---
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0xa0d2eb); // Soft blue sky color
+
+        // Setup a perspective camera (Field of View, Aspect Ratio, Near plane, Far plane)
+        const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.set(0, 8, 12); // Position camera high up and back to look down at the map
+        camera.lookAt(0, 1, 0); // Point the camera eye directly at the coffee shop
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.shadowMap.enabled = true; // Enable realistic shadow maps
+        document.body.appendChild(renderer.domElement);
+
+        // --- 2. ADD REALISTIC LIGHTING ---
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.6); // Soft overall environment light
+        scene.add(ambientLight);
+
+        const sunLight = new THREE.DirectionalLight(0xfffaed, 0.8); // Warm sun light casting shadows
+        sunLight.position.set(10, 20, 10);
+        sunLight.castShadow = true;
+        scene.add(sunLight);
+
+        // --- 3. BUILD THE MAP GEOMETRY (The Assets) ---
+
+        // The Grass Field
+        const grassGeo = new THREE.PlaneGeometry(30, 30);
+        const grassMat = new THREE.MeshLambertMaterial({ color: 0x76c764 });
+        const grass = new THREE.Mesh(grassGeo, grassMat);
+        grass.rotation.x = -Math.PI / 2; // Flat on the floor
+        grass.receiveShadow = true;
+        scene.add(grass);
+
+        // Circle Road (A dark grey ring surrounding the shop)
+        const roadGeo = new THREE.RingGeometry(5, 7, 32);
+        const roadMat = new THREE.MeshLambertMaterial({ color: 0x444444, side: THREE.DoubleSide });
+        const road = new THREE.Mesh(roadGeo, roadMat);
+        road.rotation.x = -Math.PI / 2;
+        road.position.y = 0.01; // Lift slightly above grass to prevent texture flickering
+        road.receiveShadow = true;
+        scene.add(road);
+
+        // The Coffee Shop Building Box (Width, Height, Depth)
+        const shopGeo = new THREE.BoxGeometry(3, 2.5, 3);
+        const shopMat = new THREE.MeshLambertMaterial({ color: 0xd7ccc8 }); // Warm brick tone
+        const shop = new THREE.Mesh(shopGeo, shopMat);
+        shop.position.set(0, 1.25, 0); // Ground sits at y=0, so lift by half its height
+        shop.castShadow = true;
+        shop.receiveShadow = true;
+        scene.add(shop);
+
+        // Cozy Red Roof (A 3D cone shape acting as a building roof)
+        const roofGeo = new THREE.ConeGeometry(2.5, 1.5, 4);
+        const roofMat = new THREE.MeshLambertMaterial({ color: 0xd32f2f }); // Classic red roof
+        const roof = new THREE.Mesh(roofGeo, roofMat);
+        roof.position.set(0, 3.1, 0);
+        roof.rotation.y = Math.PI / 4; // Align square corners with the building box
+        roof.castShadow = true;
+        scene.add(roof);
+
+        // --- 4. GAME RENDERING LOOP ---
+        function animate() {
+            requestAnimationFrame(animate);
+
+            // Gently rotate the whole map so you can view it seamlessly from all 3D angles
+            scene.rotation.y += 0.003; 
+
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        // Handle browser window resizing automatically
+        window.addEventListener('resize', onWindowResize, false);
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+    </script>
+</body>
+</html>

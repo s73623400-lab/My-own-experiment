@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Hollow Cafe - System Floor</title>
+    <title>The Hollow Cafe - House Floor</title>
     <style>
         * {
             box-sizing: border-box;
@@ -55,7 +55,7 @@
             text-shadow: 0 0 8px rgba(255, 255, 255, 0.5);
         }
 
-        /* CORE VIEWPORT WRAPPER */
+        /* CORE CANVAS VIEWPORT WRAPPER */
         .viewport-wrapper {
             position: relative;
             width: 794px;
@@ -73,54 +73,7 @@
             z-index: 10;
         }
 
-        /* DAY SHIFT TERMINAL OVERLAY */
-        #dayShiftUI {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: #141517;
-            z-index: 50; 
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 20px;
-            color: #f3f4f6;
-        }
-
-        .register-box {
-            background-color: #1f232b;
-            border: 2px solid #374151;
-            padding: 30px;
-            border-radius: 8px;
-            width: 80%;
-            max-width: 500px;
-            text-align: center;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-        }
-
-        .register-btn {
-            background-color: #2563eb;
-            color: white;
-            border: none;
-            padding: 14px 28px;
-            font-size: 1.1rem;
-            font-weight: bold;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: all 0.2s;
-            margin-top: 15px;
-            text-transform: uppercase;
-        }
-
-        .register-btn:hover {
-            background-color: #1d4ed8;
-            transform: scale(1.02);
-        }
-
-        /* INTERACTION TERMINAL OVERLAY */
+        /* INTERACTION TITLE SCREEN TERMINAL OVERLAY */
         #interactionScreen {
             position: absolute;
             top: 0;
@@ -196,27 +149,18 @@
         
         <!-- DATA HUD BAR -->
         <div class="hud-banner">
-            <div class="hud-item">CALENDAR: <span id="hud-day" class="hud-value">DAY 1</span></div>
-            <div class="hud-item">CLOCK METRIC: <span id="hud-time" class="hud-value">08:00 AM</span></div>
-            <div class="hud-item">SHIFT INCOME: <span id="hud-money" class="hud-value" style="color: #22c55e;">$0.00</span></div>
+            <div class="hud-item">LOCATION: <span class="hud-value" style="color: #ff9f0a;">SAFE HOUSE</span></div>
+            <div class="hud-item">CLOCK METRIC: <span id="hud-time" class="hud-value">01:00 AM</span></div>
+            <div class="hud-item">THREAT SECTOR: <span id="hud-threat" class="hud-value" style="color: #22c55e;">STABLE</span></div>
         </div>
 
         <div class="viewport-wrapper">
             
-            <!-- INTERACTIVE POP-UP MODAL PANEL -->
+            <!-- INTERACTIVE POP-UP MODAL PANEL (Guaranteed Click Trigger Engine) -->
             <div id="interactionScreen">
                 <h1 id="screenTitle" class="menu-title">THE HOLLOW CAFE</h1>
-                <p id="screenDesc" style="color: #9ca3af; max-width: 600px;">Welcome to your first morning shift assignment.</p>
-                <button id="screenActionBtn" class="menu-btn" onclick="advanceWorkflowState()">Clock In</button>
-            </div>
-
-            <!-- DAYTIME MANAGEMENT REGISTER INTERFACE -->
-            <div id="dayShiftUI" style="display: none;">
-                <div class="register-box">
-                    <h2 style="color: #ff9f0a; margin-bottom: 10px; font-size: 1.4rem;">POS TERMINAL</h2>
-                    <p id="orderDeskText" style="margin-bottom: 15px; min-height: 40px; font-style: italic;">Waiting for patrons...</p>
-                    <button id="orderProcessBtn" class="register-btn" onclick="processRegisterOrder()">Process Register Order</button>
-                </div>
+                <p id="screenDesc" style="color: #9ca3af; max-width: 600px;">Wake up. You have an urgent shift configuration files request pending on your terminal board layout structures.</p>
+                <button id="screenActionBtn" class="menu-btn" onclick="bootSmallHouseEngine()">Clock In</button>
             </div>
 
             <!-- SURVIVAL GRID LAYER CANVAS -->
@@ -226,7 +170,7 @@
         <!-- NOTIFICATION DIALOGUE BAR CONTAINER -->
         <div class="dialogue-box">
             <div id="dialogueSpeaker" class="dialogue-speaker">LOG CONSOLE</div>
-            <div id="dialogueText" class="dialogue-text">System operational. Click "Clock In" to begin your regular workflow logs.</div>
+            <div id="dialogueText" class="dialogue-text">System operational. Click "Clock In" to load your house map workspace structures directly.</div>
         </div>
     </div>
 
@@ -234,66 +178,104 @@
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
 
-        const SAVE_PREFIX = 'hollow_cafe_slot_';
-        let currentProfile = { name: "Zack", alias: "Espresso King" };
-
-        let gameDay = 1;
-        let gameHour = 8;
-        let isPm = false;
-        let gameProfit = 0;
-        let currentGameState = "START_MENU"; 
-
+        let isEngineRunning = false;
         let loopId = null;
-        let player = { x: 120, y: 225, size: 12, speed: 2.8, angle: 0 };
-        let anomalies = [
-            { x: 520, y: 90, size: 11, speedX: 1.4, speedY: 1.0, color: '#ff0000' },
-            { x: 620, y: 340, size: 14, speedX: -1.2, speedY: -1.6, color: '#ff0000' }
-        ];
+
+        // Player configurations starting metrics centered inside our cottage bedroom
+        let player = { x: 150, y: 220, size: 12, speed: 3.0, angle: 0 };
+        
+        // Static Furniture Obstructions Layout blueprint mapping coordinates inside your small house
         let mapObjects = [
-            { x: 340, y: 100, w: 40, h: 250, color: '#27272a', label: 'Bar Counter' },
-            { x: 710, y: 200, w: 45, h: 50, color: '#eab308', label: 'Main Breaker Panel', fixed: false }
+            { x: 380, y: 140, w: 70, h: 140, color: '#78350f', label: 'Wooden Dining Table' },
+            { x: 100, y: 60, w: 120, h: 50, color: '#3f3f46', label: 'Cozy Couch Bed' },
+            { x: 650, y: 50, w: 60, h: 60, color: '#4c1d95', label: 'Static Television Anomaly' }
         ];
+
         let keys = { w: false, a: false, s: false, d: false };
         let mouse = { x: 0, y: 0 };
-
-        window.onload = function() {
-            try {
-                let slotId = localStorage.getItem('hollow_cafe_current_configuring_slot') || '1';
-                let raw = localStorage.getItem(SAVE_PREFIX + slotId);
-                if (raw) {
-                    currentProfile = JSON.parse(raw);
-                }
-            } catch (e) {
-                console.log("No profile save link found; running fallback parameters.");
-            }
-            document.getElementById('screenDesc').innerText = `Staff Logged: ${currentProfile.name.toUpperCase()} [Alias: ${currentProfile.alias.toUpperCase()}]. Welcome to your barista cycle logs.`;
-        };
 
         function setConsoleLog(speaker, text) {
             document.getElementById('dialogueSpeaker').innerText = speaker.toUpperCase();
             document.getElementById('dialogueText').innerText = text;
         }
 
-        function advanceWorkflowState() {
-            const modal = document.getElementById('interactionScreen');
+        // TRIGGER METHOD SWITCHING PANELS TO LOAD LIVE GAME MAP INSTANTLY ON CLICKS
+        function bootSmallHouseEngine() {
+            document.getElementById('interactionScreen').style.display = 'none';
+            isEngineRunning = true;
             
-            if (currentGameState === "START_MENU" || currentGameState === "NEXT_DAY_PENDING") {
-                currentGameState = "DAY_SHIFT";
-                modal.style.display = 'none';
-                document.getElementById('dayShiftUI').style.display = 'flex';
-                
-                gameHour = 8;
-                isPm = false;
-                updateHudDisplays();
-                queueNextDayCustomer();
-                setConsoleLog("SHIFT UPDATE", "Front lobby unlocked. Patrons arriving. Click the order processing button to manage customer lines.");
-            } 
-            else if (currentGameState === "MIDNIGHT_ALERT_PENDING") {
-                currentGameState = "HORROR_SHIFT";
-                modal.style.display = 'none';
-                document.getElementById('dayShiftUI').style.display = 'none'; 
-                
-                gameHour = 1;
-                isPm = false; 
-                updateHudDisplays();
-                
+            // Wire tracking event listeners directly to window frame engines
+            window.addEventListener('keydown', handleKeyDown);
+            window.addEventListener('keyup', handleKeyUp);
+            canvas.addEventListener('mousemove', handleMouseMove);
+
+            setConsoleLog("HOUSE DIARY", "Your smartphone buzzes on the nightstand. Use WASD to navigate and check your furniture. Sweeping your MOUSE aims your flashlight beam.");
+            
+            if (loopId) cancelAnimationFrame(loopId);
+            loopId = requestAnimationFrame(houseEngineFrameCycle);
+        }
+
+        function handleKeyDown(e) {
+            let key = e.key.toLowerCase();
+            if (key in keys) { keys[key] = true; e.preventDefault(); }
+        }
+        function handleKeyUp(e) {
+            let key = e.key.toLowerCase();
+            if (key in keys) keys[key] = false;
+        }
+        function handleMouseMove(e) {
+            const rect = canvas.getBoundingClientRect();
+            mouse.x = e.clientX - rect.left;
+            mouse.y = e.clientY - rect.top;
+        }
+
+        // MAIN RECURSIVE PHYSICS ANIMATION LOOPS CORE WHEEL
+        function houseEngineFrameCycle() {
+            if (!isEngineRunning) return;
+
+            updatePlayerPhysicsVectors();
+            renderHouseGraphicsLayers();
+
+            loopId = requestAnimationFrame(houseEngineFrameCycle);
+        }
+
+        function updatePlayerPhysicsVectors() {
+            let nextX = player.x;
+            let nextY = player.y;
+
+            if (keys.w) nextY -= player.speed;
+            if (keys.s) nextY += player.speed;
+            if (keys.a) nextX -= player.speed;
+            if (keys.d) nextX += player.speed;
+
+            // Constrain avatar directly inside absolute map exterior walls boundaries metrics
+            if (nextX > player.size && nextX < canvas.width - player.size) {
+                if (!evaluateFurnitureCollisions(nextX, player.y)) player.x = nextX;
+            }
+            if (nextY > player.size && nextY < canvas.height - player.size) {
+                if (!evaluateFurnitureCollisions(player.x, nextY)) player.y = nextY;
+            }
+
+            // Continuous calculation of head perspective orientation pointing towards pointing mouse dots
+            player.angle = Math.atan2(mouse.y - player.y, mouse.x - player.x);
+        }
+
+        function evaluateFurnitureCollisions(x, y) {
+            for (let obj of mapObjects) {
+                if (x + player.size > obj.x && x - player.size < obj.x + obj.w &&
+                    y + player.size > obj.y && y - player.size < obj.y + obj.h) {
+                    
+                    if (obj.label.includes('Anomaly')) {
+                        setConsoleLog("⚠️ RADAR BLIP", "The screen hums with white noise. An unnatural draft fills the bedroom corridors.");
+                        document.getElementById('hud-threat').innerText = "ANOMALY INBOUND";
+                        document.getElementById('hud-threat').style.color = "#ef4444";
+                    } else {
+                        setConsoleLog("INTERACTION", `Approaching your house asset structures: [${obj.label}]. Path blocked.`);
+                    }
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        function renderHouseGraphicsLayers() {

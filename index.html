@@ -13,7 +13,7 @@
         }
 
         body {
-            background: #0f172a;
+            background: #000000; /* Switched screen background to pure horror black */
             color: #f8fafc;
             height: 100vh;
             display: flex;
@@ -21,9 +21,26 @@
             justify-content: flex-start;
             padding-left: 10%;
             overflow: hidden;
-            background-image: linear-gradient(to right, rgba(15, 23, 42, 0.95), rgba(15, 23, 42, 0.6)), url('your-background-image.jpg');
-            background-size: cover;
-            background-position: center;
+            position: relative;
+        }
+
+        /* Procedural Horror Smiley Face in Top Right */
+        .horror-face {
+            position: absolute;
+            top: 5%;
+            right: 5%;
+            width: 250px;
+            height: 250px;
+            transform: rotate(15deg); /* Angled as requested */
+            opacity: 0.85;
+            pointer-events: none; /* Keeps it purely visual so it doesn't block clicks */
+            filter: drop-shadow(0 0 15px rgba(239, 68, 68, 0.4)); /* Eerie crimson glow */
+        }
+
+        /* SVG internal artwork mapping closely to raw horror sketches */
+        .horror-face svg {
+            width: 100%;
+            height: 100%;
         }
 
         .menu-container {
@@ -32,6 +49,7 @@
             gap: 2rem;
             max-width: 400px;
             width: 100%;
+            z-index: 10; /* Ensures buttons stay on top of any design effects */
         }
 
         .game-title {
@@ -39,8 +57,8 @@
             font-weight: 800;
             text-transform: uppercase;
             letter-spacing: 2px;
-            color: #38bdf8;
-            text-shadow: 0 4px 12px rgba(56, 189, 248, 0.3);
+            color: #ef4444; /* Changed title colors to blood crimson */
+            text-shadow: 0 4px 20px rgba(239, 68, 68, 0.5);
             margin-bottom: 1rem;
         }
 
@@ -51,15 +69,14 @@
             transition: all 0.3s ease;
         }
 
-        /* Class used to hide screens dynamically */
         .hidden {
             display: none !important;
         }
 
         .menu-btn {
-            background: rgba(30, 41, 59, 0.7);
-            border: 2px solid #334155;
-            color: #f8fafc;
+            background: rgba(15, 23, 42, 0.8); /* Dark slate semi-transparent base */
+            border: 2px solid #1e293b;
+            color: #e2e8f0;
             padding: 1rem 2rem;
             font-size: 1.25rem;
             font-weight: 600;
@@ -74,42 +91,61 @@
         }
 
         .menu-btn:hover:not(:disabled) {
-            background: #38bdf8;
-            color: #0f172a;
-            border-color: #38bdf8;
+            background: #ef4444;
+            color: #000000;
+            border-color: #ef4444;
             transform: translateX(10px);
-            box-shadow: 0 0 20px rgba(56, 189, 248, 0.4);
+            box-shadow: 0 0 25px rgba(239, 68, 68, 0.6);
         }
 
         .menu-btn:disabled {
-            opacity: 0.3;
+            opacity: 0.15;
             cursor: not-allowed;
-            border-color: #1e293b;
+            border-color: #0f172a;
         }
 
         .slot-status {
             font-size: 0.85rem;
             font-weight: 400;
-            opacity: 0.8;
+            opacity: 0.7;
         }
 
         .back-btn {
-            border-color: #f43f5e;
-            color: #f43f5e;
-            background: rgba(244, 63, 94, 0.05);
+            border-color: #475569;
+            color: #94a3b8;
+            background: transparent;
         }
 
         .back-btn:hover {
-            background: #f43f5e !important;
-            color: #ffffff !important;
-            border-color: #f43f5e !important;
+            background: #ffffff !important;
+            color: #000000 !important;
+            border-color: #ffffff !important;
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.4);
         }
     </style>
 </head>
 <body>
 
+    <!-- Angled Horror Smiley Face Graphics Layer -->
+    <div class="horror-face">
+        <svg viewBox="0 0 100 100" xmlns="http://w3.org">
+            <!-- Left Creepy Jagged Eye -->
+            <path d="M25,30 Q35,20 40,35 Q30,40 25,30 Z" fill="#ffffff"/>
+            <circle cx="34" cy="32" r="2" fill="#ef4444" />
+            
+            <!-- Right Creepy Jagged Eye -->
+            <path d="M75,30 Q65,20 60,35 Q70,40 75,30 Z" fill="#ffffff"/>
+            <circle cx="66" cy="32" r="2" fill="#ef4444" />
+            
+            <!-- Wide Sinister Stitched/Sharp Grin -->
+            <path d="M15,55 Q50,85 85,55 Q50,70 15,55 Z" fill="#ffffff"/>
+            <!-- Sharp Teeth Details inside grin -->
+            <path d="M25,58 L28,64 L32,59 L36,66 L41,60 L46,68 L51,60 L56,68 L61,60 L66,66 L70,59 L73,63 L77,57" stroke="#000000" stroke-width="1" fill="none"/>
+        </svg>
+    </div>
+
     <div class="menu-container">
-        <h1 class="game-title">My Game</h1>
+        <h1 class="game-title">The Descent</h1>
         
         <!-- Main Home Screen Menu -->
         <div id="mainScreen" class="menu-screen">
@@ -117,9 +153,9 @@
             <button id="mainContinueBtn" class="menu-btn">Continue</button>
         </div>
 
-        <!-- Slot Selection Screen (Shared by both actions) -->
+        <!-- Slot Selection Screen -->
         <div id="slotScreen" class="menu-screen hidden">
-            <h2 id="slotScreenTitle" style="font-size: 1.5rem; margin-bottom: 0.5rem; color: #94a3b8;">Select a Profile</h2>
+            <h2 id="slotScreenTitle" style="font-size: 1.3rem; margin-bottom: 0.5rem; color: #64748b; text-transform: uppercase; letter-spacing: 1px;">Select a File</h2>
             
             <button class="menu-btn slot-btn" data-slot="1">New Game <span class="slot-status"></span></button>
             <button class="menu-btn slot-btn" data-slot="2">New Game <span class="slot-status"></span></button>
@@ -132,8 +168,8 @@
     </div>
 
     <script>
-        const SAVE_PREFIX = 'my_game_slot_';
-        let currentMode = ''; // Track whether user clicked 'new' or 'continue'
+        const SAVE_PREFIX = 'my_horror_game_slot_';
+        let currentMode = '';
 
         document.addEventListener('DOMContentLoaded', () => {
             const mainScreen = document.getElementById('mainScreen');
@@ -145,7 +181,6 @@
             const backBtn = document.getElementById('backBtn');
             const slotButtons = document.querySelectorAll('.slot-btn');
 
-            // 1. Initial configuration check for Main Screen
             function refreshMainMenu() {
                 let hasAnySave = false;
                 for (let i = 1; i <= 5; i++) {
@@ -154,14 +189,12 @@
                         break;
                     }
                 }
-                // Disable continue altogether if absolutely no files exist across all 5 profiles
                 mainContinueBtn.disabled = !hasAnySave;
             }
 
-            // 2. Set labels and states on individual slot selection buttons
             function setupSlotButtons(mode) {
                 currentMode = mode;
-                slotScreenTitle.textContent = mode === 'new' ? 'Choose a slot to create:' : 'Choose a profile to load:';
+                slotScreenTitle.textContent = mode === 'new' ? 'Corrupt a new slot:' : 'Resume data string:';
 
                 slotButtons.forEach(btn => {
                     const slotId = btn.getAttribute('data-slot');
@@ -169,17 +202,15 @@
 
                     if (savedData) {
                         const data = JSON.parse(savedData);
-                        btn.innerHTML = `Profile ${slotId} <span class="slot-status">Level ${data.level} (Active)</span>`;
-                        btn.disabled = false; // Always selectable to overwrite in 'new' mode or load in 'continue' mode
+                        btn.innerHTML = `File ${slotId} <span class="slot-status">Depth ${data.level} (Saved)</span>`;
+                        btn.disabled = false;
                     } else {
-                        btn.innerHTML = `New Game <span class="slot-status">Empty Slot</span>`;
-                        // Disable this specific button only if we are attempting to load/continue progress
+                        btn.innerHTML = `New Game <span class="slot-status">[Empty]</span>`;
                         btn.disabled = (mode === 'continue');
                     }
                 });
             }
 
-            // Navigation toggles
             mainNewGameBtn.addEventListener('click', () => {
                 mainScreen.classList.add('hidden');
                 slotScreen.classList.remove('hidden');
@@ -198,7 +229,6 @@
                 refreshMainMenu();
             });
 
-            // Handle individual profile slot clicks
             slotButtons.forEach(btn => {
                 btn.addEventListener('click', () => {
                     const slotId = btn.getAttribute('data-slot');
@@ -207,38 +237,28 @@
 
                     if (currentMode === 'new') {
                         if (existingSave) {
-                            const overwrite = confirm(`Profile ${slotId} already has data. Overwrite and start a brand new game?`);
+                            const overwrite = confirm(`Warning: Overwriting File ${slotId} will permanently purge its data history. Continue?`);
                             if (!overwrite) return;
                         }
 
-                        // Create brand new file configuration
                         const newGameData = {
                             level: 1,
                             score: 0,
                             timestamp: new Date().toLocaleDateString()
                         };
                         localStorage.setItem(slotKey, JSON.stringify(newGameData));
-                        alert(`Creating Game Profile ${slotId}! Starting at Level 1...`);
-                        // window.location.href = 'game.html?slot=' + slotId;
+                        alert(`File ${slotId} initialized.`);
 
                     } else if (currentMode === 'continue') {
                         if (existingSave) {
                             const data = JSON.parse(existingSave);
-                            alert(`Loading Profile ${slotId}! (Level: ${data.level})`);
-                            // window.location.href = 'game.html?slot=' + slotId;
+                            alert(`Loading File ${slotId}... returning to Depth ${data.level}`);
                         }
                     }
                     
-                    // Return back to core dashboard after selection process completes
                     slotScreen.classList.add('hidden');
                     mainScreen.classList.remove('hidden');
                     refreshMainMenu();
                 });
             });
 
-            // Run application initializer checks on system boots
-            refreshMainMenu();
-        });
-    </script>
-</body>
-</html>
